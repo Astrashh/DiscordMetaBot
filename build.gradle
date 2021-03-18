@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+group 'me.astrash'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'net.dv8tion:JDA:4.2.0_241'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.4.2.201908231537-r'
+    implementation 'commons-io:commons-io:2.7'
+    // https://mvnrepository.com/artifact/org.apache.lucene/lucene-core
+    implementation group: 'org.apache.lucene', name: 'lucene-core', version: '8.8.1'
+    // https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser
+    implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: '8.8.1'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'me.astrash.discordwikibot.DiscordWikiBot'
+    }
+}
