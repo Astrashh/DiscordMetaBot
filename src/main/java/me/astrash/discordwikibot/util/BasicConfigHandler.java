@@ -8,7 +8,7 @@ import java.util.Properties;
 
 public class BasicConfigHandler {
 
-    public static Properties setup(String configPath) throws IOException {
+    public static void setup(Properties config, String configPath) throws IOException {
 
         File configFile = new File(configPath);
 
@@ -25,9 +25,7 @@ public class BasicConfigHandler {
         }
 
         FileInputStream configStream = new FileInputStream(configFile);
-        Properties config = new Properties();
         config.load(configStream);
         configStream.close();
-        return config;
     }
 }
