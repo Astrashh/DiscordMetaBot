@@ -9,7 +9,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.Repository;
 
-import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.nio.file.Files;
@@ -44,11 +43,7 @@ public class DiscordWikiBot {
         // Listing off all markdown file names
         List<String> pages = null;
         try {
-            pages = Files.walk(Paths.get(wikiRepoDir))
-                    .filter(Files::isRegularFile)
-                    .map(Path::getFileName)
-                    .map(Path::toString) // Convert file name to a string
-                    .filter(fileDir -> fileDir.endsWith(".md")) // Make sure file is markdown
+            pages = getFilesWithExtension(wikiRepoDir, ".md").stream()
                     .map(fileDir -> fileDir.substring(0, fileDir.lastIndexOf('.'))) // Strip file extension
                     .collect(Collectors.toList());
 
@@ -64,6 +59,15 @@ public class DiscordWikiBot {
             System.out.print("Failed to set up Discord bot via JDA!");
             e.printStackTrace();
         }
+    }
+
+    private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
+        return Files.walk(Paths.get(searchDir))
+                .filter(Files::isRegularFile)
+                .map(Path::getFileName)
+                .map(Path::toString) // Convert file name to a string
+                .filter(fileDir -> fileDir.endsWith(extension)) // Make sure file is markdown
+                .collect(Collectors.toList());
     }
 
     private static void setupBot(String token) throws LoginException {
