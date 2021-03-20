@@ -1,9 +1,11 @@
 package me.astrash.discordwikibot;
 
+import me.astrash.discordwikibot.index.LuceneIndexer;
 import me.astrash.discordwikibot.util.BasicConfigHandler;
 import me.astrash.discordwikibot.util.SimpleProgressMonitor;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.commons.io.FileUtils;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
@@ -17,7 +19,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 public class DiscordWikiBot {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ParseException {
 
         // Simple temporary config reader
         Properties config = new Properties();
@@ -37,19 +39,21 @@ public class DiscordWikiBot {
             e.printStackTrace();
         }
 
+        LuceneIndexer indexer = new LuceneIndexer(wikiRepoDir, "./resources/index");
+
         // Setting up discord bot
         try {
-            setupBot(config.getProperty("botToken"));
+            setupBot(config.getProperty("botToken"), indexer);
         } catch (LoginException e) {
             System.out.print("Failed to set up Discord bot via JDA!");
             e.printStackTrace();
         }
     }
 
-    private static void setupBot(String token) throws LoginException {
+    private static void setupBot(String token, LuceneIndexer indexer) throws LoginException {
         JDABuilder builder = JDABuilder.createDefault(token);
         builder
-                .addEventListeners(new MessageListener())
+                .addEventListeners(new MessageListener(indexer))
                 .build();
     }
 
