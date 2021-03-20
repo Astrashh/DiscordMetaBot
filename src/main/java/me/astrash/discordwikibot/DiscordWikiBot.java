@@ -13,11 +13,8 @@ import org.eclipse.jgit.transport.FetchResult;
 import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 public class DiscordWikiBot {
     public static void main(String[] args) {
@@ -25,7 +22,7 @@ public class DiscordWikiBot {
         // Simple temporary config reader
         Properties config = new Properties();
         try {
-            BasicConfigHandler.setup(config, "./resources/config.properties");
+            BasicConfigHandler.setup(config, "./resources");
         } catch (IOException e) {
             System.out.println("Failed to load config!");
             e.printStackTrace();
