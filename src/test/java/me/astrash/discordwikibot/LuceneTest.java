@@ -29,16 +29,11 @@ import java.util.stream.Collectors;
 public class LuceneTest {
     public static void main(String[] args) throws IOException, ParseException {
 
-        String fileDir = "./resources/wikiRepo/guides/Configuring-Your-Pack.md";
-        File file = new File(fileDir);
-        String fileName = file.getName().substring(0, file.getName().lastIndexOf('.')); // Strip file extension
-        System.out.println("File name: " + fileName);
-
-        Path indexPath = Paths.get("./resources/index");
+        String indexDir = "./resources/index";
         String wikiRepoDir = "./resources/wikiRepo";
 
         // Creating the index
-        MMapDirectory directory = new MMapDirectory(indexPath);
+        MMapDirectory directory = new MMapDirectory(Paths.get(indexDir));
         Analyzer analyzer = new StandardAnalyzer();
         IndexWriterConfig config = new IndexWriterConfig(analyzer)
                 .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
@@ -56,39 +51,41 @@ public class LuceneTest {
 
         writer.close();
 
-
-        IndexReader reader = DirectoryReader.open(FSDirectory.open(indexPath));
+        // Setting up queries
+        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexDir)));
         IndexSearcher searcher = new IndexSearcher(reader);
-
-        //QueryParser parser = new QueryParser("contents", analyzer);
-
         String[] fields = new String[] { "title", "contents" };
         HashMap<String, Float> boosts = new HashMap<String, Float>();
         boosts.put("title", (float) 5);
         boosts.put("contents", (float) 1);
+        QueryParser parser = new MultiFieldQueryParser(fields, analyzer, boosts);
 
-        MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer, boosts);
+        // Making a query
+        query("Tree configuration", parser, searcher);
+        query("Config packs", parser, searcher);
+        query("biome config", parser, searcher);
 
-        String input = "Tree configuration";
+        reader.close();
+    }
+
+    private static void query(String input, QueryParser parser, IndexSearcher searcher) throws ParseException, IOException {
 
         Query query = parser.parse(input);
+        System.out.println("===========================");
         System.out.println("Searching for: " + input);
         System.out.println("Analyzed query: \"" + query.toString("contents") + "\"");
         int matches = searcher.count(query);
-        System.out.println("Found " + matches + " results.");
+        System.out.println("Found " + matches + " results:");
 
-        int matchDisplays = matches;
-        TopDocs searchResults = searcher.search(query, matchDisplays);
+        TopDocs searchResults = searcher.search(query, matches);
         ScoreDoc[] hits = searchResults.scoreDocs;
 
-        for (int i = 0; i < matchDisplays; i++) {
+        for (int i = 0; i < matches; i++) {
             int docNum = hits[i].doc;
             Document doc = searcher.doc(docNum);
             String title = doc.get("title");
             System.out.println(title);
         }
-
-        reader.close();
     }
 
     private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
