@@ -14,17 +14,18 @@ public class SimpleProgressMonitor implements ProgressMonitor {
 
     @Override
     public void beginTask(String title, int totalWork) {
-        System.out.println("Start " + title + ": " + totalWork);
+        System.out.println(" " + title + ": " + totalWork);
     }
 
     @Override
     public void update(int completed) {
-        System.out.print(completed + "-");
+        //System.out.print(completed + "-");
+        System.out.print("-");
     }
 
     @Override
     public void endTask() {
-        System.out.println("Done");
+        System.out.println(" Done");
     }
 
     @Override

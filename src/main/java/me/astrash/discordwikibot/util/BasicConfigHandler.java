@@ -19,6 +19,7 @@ public class BasicConfigHandler {
             FileWriter configWriter = new FileWriter(configFile);
             configWriter.write(
                     "wikiURI = URI\n" +
+                    "wikiPullBranch = master\n" +
                     "botToken = TOKEN");
             configWriter.close();
             System.exit(0);

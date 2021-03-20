@@ -4,10 +4,11 @@ import me.astrash.discordwikibot.util.BasicConfigHandler;
 import me.astrash.discordwikibot.util.SimpleProgressMonitor;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.transport.FetchResult;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
@@ -35,20 +36,8 @@ public class DiscordWikiBot {
 
         // Ensuring wiki files are set up
         try {
-            setupWikiRepo(config.getProperty("wikiURI"), wikiRepoDir);
+            setupWikiRepo(config.getProperty("wikiURI"), wikiRepoDir, config.getProperty("wikiBranch"));
         } catch (GitAPIException | IOException e) {
-            e.printStackTrace();
-        }
-
-        // Listing off all markdown file names
-        List<String> pages = null;
-        try {
-            pages = getFilesWithExtension(wikiRepoDir, ".md").stream()
-                    .map(fileDir -> fileDir.substring(0, fileDir.lastIndexOf('.'))) // Strip file extension
-                    .collect(Collectors.toList());
-
-            pages.forEach(System.out::println);
-        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -61,35 +50,37 @@ public class DiscordWikiBot {
         }
     }
 
-    private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
-        return Files.walk(Paths.get(searchDir))
-                .filter(Files::isRegularFile)
-                .map(Path::getFileName)
-                .map(Path::toString) // Convert file name to a string
-                .filter(fileDir -> fileDir.endsWith(extension)) // Make sure file is markdown
-                .collect(Collectors.toList());
-    }
-
     private static void setupBot(String token) throws LoginException {
         JDABuilder builder = JDABuilder.createDefault(token);
-        builder.addEventListeners(new MessageListener());
-        builder.build();
+        builder
+                .addEventListeners(new MessageListener())
+                .build();
     }
 
-    private static void setupWikiRepo(String wikiURI, String wikiDir) throws IOException, GitAPIException {
-
-        Path wikiPath = Paths.get(wikiDir);
-        File wikiFile = new File(wikiDir);
+    private static void setupWikiRepo(String wikiURI, String wikiDir, String wikiBranch) throws IOException, GitAPIException {
 
         // Create directory to store wiki repository if it doesn't exist.
-        Files.createDirectories(wikiPath);
+        Files.createDirectories(Paths.get(wikiDir));
 
-        Repository repository;
-
+        File wikiFile = new File(wikiDir);
         // Attempt to open repository.
         try (Git git = Git.open(wikiFile)) {
-            repository = git.getRepository();
             System.out.println("Found repository in " + wikiDir);
+
+            // Fetch from origin remote which should have been configured in initial clone
+            System.out.println("JGit - Fetching from remote");
+            FetchResult fetchResult = git.fetch()
+                    .setRemote("origin")
+                    .setProgressMonitor(new SimpleProgressMonitor())
+                    .call();
+            fetchResult.getTrackingRefUpdates().forEach(System.out::println);
+            // Hard reset to remote tracking branch
+            System.out.println("JGit - Hard resetting to remote tracking branch");
+            git.reset()
+                    .setMode(ResetCommand.ResetType.HARD)
+                    .setRef("origin/" + wikiBranch)
+                    .setProgressMonitor(new SimpleProgressMonitor())
+                    .call();
 
         } catch (RepositoryNotFoundException e) {
             // If a repository can't be found, try to clone from remote.
@@ -100,14 +91,18 @@ public class DiscordWikiBot {
             FileUtils.cleanDirectory(wikiFile);
 
             // Attempt to clone repository.
-            System.out.println("Cloning " + wikiURI + " to " + wikiDir);
+            System.out.println("JGit - Cloning " + wikiURI + " to " + wikiDir);
             Git git = Git.cloneRepository()
                     .setURI(wikiURI)
                     .setDirectory(wikiFile)
                     .setProgressMonitor(new SimpleProgressMonitor())
                     .call();
 
-            repository = git.getRepository();
+            // Set remote tracking branch
+            StoredConfig config = git.getRepository().getConfig();
+            config.setString("remote", "origin", "url", wikiURI);
+            config.save();
+
             System.out.println("Clone successful!");
         }
     }
