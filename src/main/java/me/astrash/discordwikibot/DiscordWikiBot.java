@@ -33,7 +33,7 @@ public class DiscordWikiBot {
 
         // Ensuring wiki files are set up
         try {
-            setupWikiRepo(config.getProperty("wikiURI"), wikiRepoDir, config.getProperty("wikiBranch"));
+            setupWikiRepo(config.getProperty("wikiURI"), wikiRepoDir, config.getProperty("wikiPullBranch"));
         } catch (GitAPIException | IOException e) {
             e.printStackTrace();
         }
