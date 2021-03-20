@@ -24,34 +24,34 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class LuceneIndexer {
-    public static void main(String[] args) throws IOException, ParseException {
 
-        String indexDir = "./resources/index";
-        String wikiRepoDir = "./resources/wikiRepo";
+    String dataPath;
+    String indexPath;
+
+    QueryParser parser;
+    Analyzer analyzer;
+
+    public LuceneIndexer(String dataPath, String indexPath) throws IOException, ParseException {
+        this.dataPath = dataPath;
+        this.indexPath = indexPath;
 
         // TODO - Add custom analysis functionality
-        Analyzer analyzer = new StandardAnalyzer(); // Used in both indexing and queries
-
-        indexWiki(wikiRepoDir, indexDir, analyzer);
+        this.analyzer = new StandardAnalyzer(); // Used in both indexing and queries
 
         // Set up query parser
         String[] fields = new String[] { "title", "contents" };
         HashMap<String, Float> boosts = new HashMap<String, Float>();
         boosts.put("title", (float) 5);
         boosts.put("contents", (float) 1);
-        QueryParser parser = new MultiFieldQueryParser(fields, analyzer, boosts);
+        this.parser = new MultiFieldQueryParser(fields, analyzer, boosts);
 
-        query("Making a pack", indexDir, parser);
-        query("config packs", indexDir, parser);
-        query("community packs", indexDir, parser);
-        query("where can i find packs", indexDir, parser);
-        query("asdkjfasdnf", indexDir, parser);
+        indexWiki();
     }
 
-    private static void indexWiki(String wikiRepoDir, String indexDir, Analyzer analyzer) throws IOException, ParseException {
+    private void indexWiki() throws IOException, ParseException {
         long startTime = System.nanoTime();
         // Creating the index
-        MMapDirectory directory = new MMapDirectory(Paths.get(indexDir));
+        MMapDirectory directory = new MMapDirectory(Paths.get(indexPath));
         IndexWriterConfig config = new IndexWriterConfig(analyzer)
                 .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
                 // Just creates a new index regardless of if it exists
@@ -62,7 +62,7 @@ public class LuceneIndexer {
         // TODO -  Treat subheadings within markdown files as separate documents
         //         users to search for both full pages AND subheadings within pages.
 
-        for (String p : getFilesWithExtension(wikiRepoDir, ".md")) {
+        for (String p : getFilesWithExtension(dataPath, ".md")) {
             indexDoc(writer, Paths.get(p).toAbsolutePath(), FilenameUtils.getBaseName(p));
         }
 
@@ -73,9 +73,9 @@ public class LuceneIndexer {
         System.out.println("Index took " + duration + "ms");
     }
 
-    private static void query(String input, String indexDir, QueryParser parser) throws IOException, ParseException {
+    public void query(String input) throws IOException, ParseException {
         long startTime = System.nanoTime();
-        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexDir)));
+        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
         IndexSearcher searcher = new IndexSearcher(reader);
 
         Query query = parser.parse(input);
@@ -119,7 +119,7 @@ public class LuceneIndexer {
                 .collect(Collectors.toList());
     }
 
-    public static void indexDoc(IndexWriter writer, Path file, String title) throws IOException {
+    private static void indexDoc(IndexWriter writer, Path file, String title) throws IOException {
         InputStream stream = Files.newInputStream(file);
 
         Document document = new Document();
