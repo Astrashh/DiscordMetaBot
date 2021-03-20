@@ -1,4 +1,4 @@
-package me.astrash.discordwikibot;
+package me.astrash.discordwikibot.index;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LuceneTest {
+public class LuceneIndexer {
     public static void main(String[] args) throws IOException, ParseException {
 
         String indexDir = "./resources/index";
