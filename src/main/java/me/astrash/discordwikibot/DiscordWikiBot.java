@@ -29,9 +29,8 @@ public class DiscordWikiBot {
             System.exit(-1);
         }
 
-        String wikiRepoDir = "./resources/wikiRepo";
-
         // Ensuring wiki files are set up
+        String wikiRepoDir = "./resources/wikiRepo";
         try {
             setupWikiRepo(config.getProperty("wikiURI"), wikiRepoDir, config.getProperty("wikiPullBranch"));
         } catch (GitAPIException | IOException e) {
@@ -59,19 +58,20 @@ public class DiscordWikiBot {
         // Create directory to store wiki repository if it doesn't exist.
         Files.createDirectories(Paths.get(wikiDir));
 
-        File wikiFile = new File(wikiDir);
+        File wikiFolder = new File(wikiDir);
         // Attempt to open repository.
-        try (Git git = Git.open(wikiFile)) {
+        try (Git git = Git.open(wikiFolder)) {
             System.out.println("Found repository in " + wikiDir);
 
-            // Fetch from origin remote which should have been configured in initial clone
+            // $ git fetch origin
             System.out.println("JGit - Fetching from remote");
             FetchResult fetchResult = git.fetch()
                     .setRemote("origin")
                     .setProgressMonitor(new SimpleProgressMonitor())
                     .call();
             fetchResult.getTrackingRefUpdates().forEach(System.out::println);
-            // Hard reset to remote tracking branch
+
+            // $ git reset --hard origin/branch
             System.out.println("JGit - Hard resetting to remote tracking branch");
             git.reset()
                     .setMode(ResetCommand.ResetType.HARD)
@@ -85,13 +85,13 @@ public class DiscordWikiBot {
 
             // Clear files for clone.
             System.out.println("Clearing files inside " + wikiDir);
-            FileUtils.cleanDirectory(wikiFile);
+            FileUtils.cleanDirectory(wikiFolder);
 
-            // Attempt to clone repository.
+            // $ git clone wikiURI
             System.out.println("JGit - Cloning " + wikiURI + " to " + wikiDir);
             Git git = Git.cloneRepository()
                     .setURI(wikiURI)
-                    .setDirectory(wikiFile)
+                    .setDirectory(wikiFolder)
                     .setProgressMonitor(new SimpleProgressMonitor())
                     .call();
 
