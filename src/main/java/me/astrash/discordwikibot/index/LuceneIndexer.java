@@ -3,10 +3,7 @@ package me.astrash.discordwikibot.index;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -14,6 +11,8 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -23,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*
+ * Handles both constructing an index of markdown files, and queries of that index.
+ */
 public class LuceneIndexer {
 
     String dataPath;
@@ -48,13 +50,19 @@ public class LuceneIndexer {
         indexWiki();
     }
 
+    /*
+     * Scans through the data path and constructs a Lucene index.
+     * Both entire files and individual headings inside those files
+     * each get indexed as their own Lucene document inside the index.
+     */
     private void indexWiki() throws IOException, ParseException {
         long startTime = System.nanoTime();
         // Creating the index
         MMapDirectory directory = new MMapDirectory(Paths.get(indexPath));
         IndexWriterConfig config = new IndexWriterConfig(analyzer)
                 .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-                // Just creates a new index regardless of if it exists
+                // Just creates a new index regardless of if it exists.
+                // Could probably make it update an existing index later.
         IndexWriter writer = new IndexWriter(directory, config);
 
         // Index all markdown documents in wiki repo
@@ -63,7 +71,21 @@ public class LuceneIndexer {
         //         users to search for both full pages AND subheadings within pages.
 
         for (String p : getFilesWithExtension(dataPath, ".md")) {
-            indexDoc(writer, Paths.get(p).toAbsolutePath(), FilenameUtils.getBaseName(p));
+            String baseName = FilenameUtils.getBaseName(p);
+            if (baseName.startsWith("_")) continue;
+
+            // Index file
+            indexDoc(writer, p, baseName);
+
+            // Index headings
+            Parser parser = Parser.builder().build();
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(p));
+            Node document = parser.parseReader(reader);
+            HeaderVisitor visitor = new HeaderVisitor();
+            document.accept(visitor);
+            for (String heading : visitor.getHeadings()) {
+                indexHeader(writer, p, heading);
+            }
         }
 
         writer.close();
@@ -73,41 +95,31 @@ public class LuceneIndexer {
         System.out.println("Index took " + duration + "ms");
     }
 
-    public void query(String input) throws IOException, ParseException {
+    public QueryDisplay[] query(String input) throws IOException, ParseException {
         long startTime = System.nanoTime();
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
         IndexSearcher searcher = new IndexSearcher(reader);
 
         Query query = parser.parse(input);
 
-        System.out.println("========================================================");
-        System.out.println("Searching for: " + input);
         System.out.println("Analyzed query: \"" + query.toString("contents") + "\"");
         int matches = searcher.count(query);
 
         if (matches < 1) {
             System.out.println("No matches found");
-            return;
+            return new QueryDisplay[0];
         }
 
         System.out.println("Found " + matches + " results:");
-
-        // TODO - Delegate search handling outside of method
-        TopDocs searchResults = searcher.search(query, matches);
-        ScoreDoc[] hits = searchResults.scoreDocs;
-
-        for (int i = 0; i < matches; i++) {
-            int docNum = hits[i].doc;
-            Document doc = searcher.doc(docNum);
-            String title = doc.get("title").replace("-", " ");
-            System.out.println(" - " + title);
-        }
-
+        ScoreDoc[] scoreDocs = searcher.search(query, matches).scoreDocs;
+        QueryDisplay[] searchResults = QueryDisplay.convertScoreDocs(scoreDocs, searcher);
         reader.close();
 
         // Print search speed
         long duration = (System.nanoTime() - startTime) / 1000000;
         System.out.println("Query took " + duration + "ms");
+
+        return searchResults;
     }
 
     private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
@@ -119,17 +131,37 @@ public class LuceneIndexer {
                 .collect(Collectors.toList());
     }
 
-    private static void indexDoc(IndexWriter writer, Path file, String title) throws IOException {
-        InputStream stream = Files.newInputStream(file);
+    /*
+     * Creates and indexes headers as Lucene documents.
+     */
+    private static void indexHeader(IndexWriter writer, String file, String header) throws IOException {
 
         Document document = new Document();
 
-        Field pathField = new StringField("path", file.toString(), Field.Store.YES);
+        Field typeField = new StoredField("type", "header");
+        document.add(typeField);
+        Field pathField = new StringField("path", file, Field.Store.YES);
         document.add(pathField);
+        Field titleField = new TextField("title", header, Field.Store.YES);
+        document.add(titleField);
 
-        Field contentsField = new TextField("contents", new BufferedReader(new InputStreamReader(stream)));
+        writer.addDocument(document);
+    }
+
+    /*
+     * Creates and indexes whole files as Lucene documents.
+     */
+    private static void indexDoc(IndexWriter writer, String file, String title) throws IOException {
+
+        Document document = new Document();
+
+        Field typeField = new StoredField("type", "file");
+        document.add(typeField);
+        Field pathField = new StringField("path", file, Field.Store.YES);
+        document.add(pathField);
+        BufferedReader br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(file).toAbsolutePath())));
+        Field contentsField = new TextField("contents", br);
         document.add(contentsField);
-
         Field titleField = new TextField("title", title, Field.Store.YES);
         document.add(titleField);
 

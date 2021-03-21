@@ -1,8 +1,8 @@
 package me.astrash.discordwikibot;
 
 import me.astrash.discordwikibot.index.LuceneIndexer;
+import me.astrash.discordwikibot.index.QueryDisplay;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -11,12 +11,13 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Arrays;
 
 public class MessageListener extends ListenerAdapter {
 
     LuceneIndexer indexer;
-    String baseCommand = ".t wiki ";
+    String baseCommand = "!wiki ";
+    int maxResults = 3;
 
     public MessageListener(LuceneIndexer indexer) {
         this.indexer = indexer;
@@ -35,16 +36,45 @@ public class MessageListener extends ListenerAdapter {
 
             String input = content.substring(baseCommand.length());
 
+            System.out.println("========================================================");
+            System.out.println("Searching for: " + input);
+
+            EmbedBuilder embedBuilder = new EmbedBuilder()
+                    .setTitle("Displaying pages related to '" + input + "':")
+                    .setColor(0xF8C300);
+
             try {
-                indexer.query(input);
+                QueryDisplay[] queryResults = indexer.query(input);
+
+                // If there are no results
+                if (queryResults.length < 1) {
+                    embedBuilder.setTitle("Your search '" + input + "' did not match any pages!")
+                        .addField("Suggestions",
+                            "- Make sure that all words are spelled correctly.\n" +
+                            "- Try different keywords.\n" +
+                            "- Try fewer keywords.\n" +
+                            "- Try more general keywords.\n",
+                            false
+                        );
+                }
+                // If results are found
+                else {
+                    // Clamp amount of results
+                    QueryDisplay[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
+
+                    embedBuilder.setTitle("Found " + queryResults.length + " relevant pages");
+                    if (queryResults.length > maxResults) {
+                        embedBuilder.appendDescription("*Displaying the first " + maxResults + " most relevant results:*");
+                    }
+
+                    // Add results to embed
+                    Arrays.stream(displayResults).forEachOrdered(result -> {
+                        embedBuilder.addField(result.getHeading(), result.getDescription(), false);
+                    });
+                }
             } catch (IOException | ParseException e) {
                 e.printStackTrace();
             }
-
-            EmbedBuilder embedBuilder = new EmbedBuilder()
-                    .setTitle("Title")
-                    .setColor(0xF8C300)
-                    .appendDescription("description");
 
             MessageEmbed msg = embedBuilder.build();
             channel.sendMessage(msg).queue();
