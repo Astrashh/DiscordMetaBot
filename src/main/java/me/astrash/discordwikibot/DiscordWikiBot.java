@@ -3,6 +3,7 @@ package me.astrash.discordwikibot;
 import me.astrash.discordwikibot.index.LuceneIndexer;
 import me.astrash.discordwikibot.util.BasicConfigHandler;
 import me.astrash.discordwikibot.util.SimpleProgressMonitor;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -21,42 +22,50 @@ import java.util.Properties;
 public class DiscordWikiBot {
     public static void main(String[] args) throws IOException, ParseException {
 
+        String wikiRepoDir = "./resources/wikiRepo";
+        String indexDir = "./resources/index";
+
         // Simple temporary config reader
         Properties config = new Properties();
         try {
             BasicConfigHandler.setup(config, "./resources");
         } catch (IOException e) {
-            System.out.println("Failed to load config!");
+            System.err.println("Failed to load config!");
             e.printStackTrace();
             System.exit(-1);
         }
 
         // Ensuring wiki files are set up
-        String wikiRepoDir = "./resources/wikiRepo";
         try {
             setupWikiRepo(config.getProperty("wikiURI"), wikiRepoDir, config.getProperty("wikiPullBranch"));
         } catch (GitAPIException | IOException e) {
+            System.err.println("Failed to set up wiki repository!");
             e.printStackTrace();
         }
 
-        LuceneIndexer indexer = new LuceneIndexer(wikiRepoDir, "./resources/index");
+        // Handles indexing the wiki and search queries
+        LuceneIndexer indexer = new LuceneIndexer(wikiRepoDir, indexDir);
 
         // Setting up discord bot
         try {
             setupBot(config.getProperty("botToken"), indexer);
         } catch (LoginException e) {
-            System.out.print("Failed to set up Discord bot via JDA!");
+            System.err.print("Failed to set up Discord bot via JDA!");
             e.printStackTrace();
         }
     }
 
     private static void setupBot(String token, LuceneIndexer indexer) throws LoginException {
         JDABuilder builder = JDABuilder.createDefault(token);
-        builder
+        JDA bot = builder
                 .addEventListeners(new MessageListener(indexer))
                 .build();
     }
 
+    /*
+     * Ensures that there is an up to date local copy
+     * of a repository storing GitHub wiki pages.
+     */
     private static void setupWikiRepo(String wikiURI, String wikiDir, String wikiBranch) throws IOException, GitAPIException {
 
         // Create directory to store wiki repository if it doesn't exist.
