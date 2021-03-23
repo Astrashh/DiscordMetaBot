@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 public class DiscordMetaBot {
+
     public static void main(String[] args) throws IOException, ParseException {
 
         String wikiRepoDir = "./resources/wikiRepo";
@@ -59,6 +60,7 @@ public class DiscordMetaBot {
     }
 
     private static void setupBot(String token, Indexer indexer) throws LoginException {
+
         JDABuilder builder = JDABuilder.createDefault(token);
         JDA bot = builder
                 .addEventListeners(new MessageListener(indexer))
@@ -69,15 +71,13 @@ public class DiscordMetaBot {
      * Ensures that there is an up to date local copy
      * of a repository storing GitHub wiki pages.
      */
-
     // TODO - Decouple wiki repo handling into a separate class
-
     private static void setupWikiRepo(String wikiURI, String wikiDir, String wikiBranch) throws IOException, GitAPIException {
 
         // Create directory to store wiki repository if it doesn't exist.
         Files.createDirectories(Paths.get(wikiDir));
-
         File wikiFolder = new File(wikiDir);
+
         // Attempt to open repository.
         try (Git git = Git.open(wikiFolder)) {
             System.out.println("Found repository in " + wikiDir);
@@ -97,8 +97,8 @@ public class DiscordMetaBot {
                     .setRef("origin/" + wikiBranch)
                     .setProgressMonitor(new SimpleProgressMonitor())
                     .call();
-
         } catch (RepositoryNotFoundException e) {
+
             // If a repository can't be found, try to clone from remote.
             System.out.println("Could not find git repository in " + wikiDir);
 
@@ -118,7 +118,6 @@ public class DiscordMetaBot {
             StoredConfig config = git.getRepository().getConfig();
             config.setString("remote", "origin", "url", wikiURI);
             config.save();
-
             System.out.println("Clone successful!");
         }
     }

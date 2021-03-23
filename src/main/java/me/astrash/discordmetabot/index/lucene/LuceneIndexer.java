@@ -42,7 +42,7 @@ public class LuceneIndexer implements Indexer {
         this.analyzer = new StandardAnalyzer(); // Used in both indexing and queries
 
         // Set up query parser
-        String[] fields = new String[] { "title", "contents" };
+        String[] fields = new String[]{"title", "contents"};
         HashMap<String, Float> boosts = new HashMap<String, Float>();
         boosts.put("title", (float) 5);
         boosts.put("contents", (float) 1);
@@ -62,8 +62,8 @@ public class LuceneIndexer implements Indexer {
         MMapDirectory directory = new MMapDirectory(Paths.get(indexPath));
         IndexWriterConfig config = new IndexWriterConfig(analyzer)
                 .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-                // Just creates a new index regardless of if it exists.
-                // Could probably make it update an existing index later.
+        // Just creates a new index regardless of if it exists.
+        // Could probably make it update an existing index later.
         IndexWriter writer = new IndexWriter(directory, config);
 
         // Index all markdown documents in wiki repo
@@ -71,7 +71,7 @@ public class LuceneIndexer implements Indexer {
         // TODO -  Treat subheadings within markdown files as separate documents
         //         users to search for both full pages AND subheadings within pages.
 
-        for (String p : getFilesWithExtension(dataPath, ".md")) {
+        for (String p: getFilesWithExtension(dataPath, ".md")) {
 
             // TODO - Move getBaseName into utils class
             String baseName = FilenameUtils.getBaseName(p);
@@ -86,7 +86,7 @@ public class LuceneIndexer implements Indexer {
             Node document = parser.parseReader(reader);
             HeaderVisitor visitor = new HeaderVisitor();
             document.accept(visitor);
-            for (String heading : visitor.getHeadings()) {
+            for (String heading: visitor.getHeadings()) {
                 indexHeader(writer, p, heading);
             }
         }

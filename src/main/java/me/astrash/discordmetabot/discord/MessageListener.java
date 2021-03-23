@@ -17,16 +17,14 @@ public class MessageListener extends ListenerAdapter {
     String baseCommand = "!wiki ";
     int maxResults = 3;
 
-    public MessageListener(Indexer indexer) {
-        this.indexer = indexer;
-    }
+    public MessageListener(Indexer indexer) { this.indexer = indexer; }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
         // Only respond to non-bots
 
-        Message message  = event.getMessage();
+        Message message = event.getMessage();
         String content = message.getContentRaw();
 
         if (content.startsWith(baseCommand)) {
@@ -46,12 +44,12 @@ public class MessageListener extends ListenerAdapter {
             // If there are no results
             if (queryResults.length < 1) {
                 embedBuilder.setTitle("Your search '" + input + "' did not match any pages!")
-                    .addField("Suggestions",
+                    .addField(
+                        "Suggestions",
                         "- Make sure that all words are spelled correctly.\n" +
                         "- Try different keywords.\n" +
                         "- Try more general keywords.\n",
-                        false
-                    );
+                    false);
             }
             // If results are found
             else {

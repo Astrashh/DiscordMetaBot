@@ -62,20 +62,12 @@ public class LuceneQueryResult implements QueryResult {
     }
 
     @Override
-    public String getHeading() {
-        return heading;
-    }
+    public String getHeading() { return heading; }
 
     @Override
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() { return description; }
 
-    private void setHeading (String heading) {
-        this.heading = heading;
-    }
+    private void setHeading(String heading) { this.heading = heading; }
 
-    private void setDescription (String description) {
-        this.description = description;
-    }
+    private void setDescription(String description) { this.description = description; }
 }

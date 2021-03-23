@@ -25,6 +25,7 @@ public class BasicConfigHandler {
                     "wikiPullBranch = master\n" +
                     "botToken = TOKEN");
             configWriter.close();
+
             System.exit(0);
         }
 
