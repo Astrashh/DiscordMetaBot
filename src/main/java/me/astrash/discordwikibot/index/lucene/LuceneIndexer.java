@@ -97,7 +97,7 @@ public class LuceneIndexer implements Indexer {
     }
 
     @Override
-    public QueryDisplay[] query(String input) {
+    public LuceneQueryResult[] query(String input) {
 
         try {
             long startTime = System.nanoTime();
@@ -111,12 +111,12 @@ public class LuceneIndexer implements Indexer {
 
             if (matches < 1) {
                 System.out.println("No matches found");
-                return new QueryDisplay[0];
+                return new LuceneQueryResult[0];
             }
 
             System.out.println("Found " + matches + " results:");
             ScoreDoc[] scoreDocs = searcher.search(query, matches).scoreDocs;
-            QueryDisplay[] searchResults = QueryDisplay.convertScoreDocs(scoreDocs, searcher);
+            LuceneQueryResult[] searchResults = LuceneQueryResult.convertScoreDocs(scoreDocs, searcher);
             reader.close();
 
             // Print search speed

@@ -8,7 +8,7 @@ import org.apache.lucene.search.ScoreDoc;
 
 import java.io.IOException;
 
-public class QueryDisplay implements QueryResult {
+public class LuceneQueryResult implements QueryResult {
 
     private String heading;
     private String description;
@@ -19,7 +19,7 @@ public class QueryDisplay implements QueryResult {
     /*
      * Container class for holding information for each query hit
      */
-    public QueryDisplay(ScoreDoc scoreDoc, IndexSearcher searcher) throws IOException {
+    public LuceneQueryResult(ScoreDoc scoreDoc, IndexSearcher searcher) throws IOException {
 
         Document doc = searcher.doc(scoreDoc.doc);
 
@@ -48,14 +48,14 @@ public class QueryDisplay implements QueryResult {
     /*
      * Returns QueryDisplays from an array of ScoreDocs (the results of a query)
      */
-    public static QueryDisplay[] convertScoreDocs(ScoreDoc[] docs, IndexSearcher searcher) throws IOException {
+    public static LuceneQueryResult[] convertScoreDocs(ScoreDoc[] docs, IndexSearcher searcher) throws IOException {
 
         // TODO - Add fancy logic to combine file displays with header displays
 
-        QueryDisplay[] displays = new QueryDisplay[docs.length];
+        LuceneQueryResult[] displays = new LuceneQueryResult[docs.length];
 
         for (int i = 0; i < docs.length; i++) {
-            displays[i] = new QueryDisplay(docs[i], searcher);
+            displays[i] = new LuceneQueryResult(docs[i], searcher);
         }
 
         return displays;
