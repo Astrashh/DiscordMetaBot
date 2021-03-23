@@ -1,4 +1,4 @@
-package me.astrash.discordwikibot;
+package me.astrash.discordwikibot.discord;
 
 import me.astrash.discordwikibot.index.Indexer;
 import me.astrash.discordwikibot.index.QueryResult;

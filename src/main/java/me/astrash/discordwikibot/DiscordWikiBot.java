@@ -1,5 +1,6 @@
 package me.astrash.discordwikibot;
 
+import me.astrash.discordwikibot.discord.MessageListener;
 import me.astrash.discordwikibot.index.Indexer;
 import me.astrash.discordwikibot.index.lucene.LuceneIndexer;
 import me.astrash.discordwikibot.util.BasicConfigHandler;
