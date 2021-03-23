@@ -15,6 +15,10 @@ public class MessageListener extends ListenerAdapter {
 
     Indexer indexer;
     String baseCommand = "!wiki ";
+    String embedImageURL = "https://cdn.discordapp.com/icons/715448651786485780/b913e035edaf9515a922e3e79fdb351a.webp";
+    int embedColor = 0x2F3136;
+    int embedColorWarning = 0xF8C300;
+    int embedColorError = 0xDD0000;
     int maxResults = 3;
 
     public MessageListener(Indexer indexer) { this.indexer = indexer; }
@@ -36,20 +40,28 @@ public class MessageListener extends ListenerAdapter {
             System.out.println("Searching for: " + input);
 
             EmbedBuilder embedBuilder = new EmbedBuilder();
+            //embedBuilder.setImage(embedImageURL);
+            embedBuilder.setThumbnail(embedImageURL);
+
             String embedTitle = "Displaying pages related to '" + input + "':";
 
             // Set embed to error message if the input is too long to be displayed
             if (embedTitle.length() > MessageEmbed.TITLE_MAX_LENGTH) {
-                embedBuilder.setTitle("Your requested search is too long")
-                    .setColor(0xDD0000)
+                embedBuilder
+                    .setTitle("Your requested search is too long")
+                    .setColor(embedColorError)
                     .setDescription("Please use a shorter query!");
             }
             else {
                 embedBuilder
                         .setTitle(embedTitle)
-                        .setColor(0xF8C300);
+                        .setColor(embedColor);
 
+                float queryStart = System.nanoTime();
                 QueryResult[] queryResults = indexer.query(input);
+                float queryTime = (System.nanoTime() - queryStart) / 1000000;
+
+                embedBuilder.setFooter("Requested by " + event.getAuthor().getAsTag() + " - Found in " + Math.round(queryTime) + "ms", event.getAuthor().getAvatarUrl());
 
                 // If there are no results
                 if (queryResults.length < 1) {
@@ -76,7 +88,7 @@ public class MessageListener extends ListenerAdapter {
                     Arrays.stream(displayResults).forEachOrdered(result -> {
                         embedBuilder.addField(
                                 clampString(result.getHeading(), MessageEmbed.TITLE_MAX_LENGTH),
-                                clampString(result.getDescription(), MessageEmbed.VALUE_MAX_LENGTH),
+                                clampString(":link: " + result.getDescription(), MessageEmbed.VALUE_MAX_LENGTH),
                                 false
                         );
                     });
