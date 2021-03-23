@@ -1,7 +1,8 @@
 package me.astrash.discordmetabot.index.lucene;
 
-import me.astrash.discordmetabot.discord.MessageListener;
 import me.astrash.discordmetabot.index.Indexer;
+import me.astrash.discordmetabot.parse.MarkdownParser;
+import me.astrash.discordmetabot.parse.commonmark.CommonMarkParser;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -13,8 +14,6 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
-import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -84,12 +83,8 @@ public class LuceneIndexer implements Indexer {
             indexDoc(writer, p, baseName);
 
             // Index headings
-            Parser parser = Parser.builder().build();
-            InputStreamReader reader = new InputStreamReader(new FileInputStream(p));
-            Node document = parser.parseReader(reader);
-            HeaderVisitor visitor = new HeaderVisitor();
-            document.accept(visitor);
-            for (String heading: visitor.getHeadings()) {
+            MarkdownParser parser = new CommonMarkParser();
+            for (String heading: parser.getHeadings(p)) {
                 indexHeader(writer, p, heading);
             }
         }
@@ -137,6 +132,9 @@ public class LuceneIndexer implements Indexer {
         return new LuceneQueryResult[0];
     }
 
+    /*
+     * Returns the paths of files with a certain file extension
+     */
     private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
         return Files
                 .walk(Paths.get(searchDir))

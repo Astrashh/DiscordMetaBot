@@ -1,4 +1,4 @@
-package me.astrash.discordmetabot.index.lucene;
+package me.astrash.discordmetabot.parse.commonmark;
 
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Heading;
@@ -11,7 +11,7 @@ import java.util.List;
 /*
  * Function is to return a list of headings within a CommonMark node.
  */
-class HeaderVisitor extends AbstractVisitor {
+public class HeaderVisitor extends AbstractVisitor {
 
     List<String> headings = new ArrayList<>();
 

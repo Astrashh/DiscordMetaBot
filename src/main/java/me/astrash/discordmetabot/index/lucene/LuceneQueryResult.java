@@ -16,7 +16,7 @@ public class LuceneQueryResult implements QueryResult {
     private String description;
 
     private final String wikiURL = "https://github.com/PolyhedralDev/Terra/wiki";
-    private final String anchorRegex = "/^[\\w\\-\\s]+$/";
+    private final String anchorRegex = "[^a-zA-Z0-9 ]";
 
     /*
      * Container class for holding information for each query hit

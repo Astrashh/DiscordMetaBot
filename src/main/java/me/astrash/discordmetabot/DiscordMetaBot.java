@@ -14,7 +14,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.FetchResult;
-import org.slf4j.impl.SimpleLogger;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
@@ -27,8 +26,6 @@ public class DiscordMetaBot {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DiscordMetaBot.class);
 
     public static void main(String[] args) throws IOException, ParseException {
-
-
 
         String wikiRepoDir = "./resources/wikiRepo";
         String indexDir = "./resources/index";
