@@ -1,7 +1,7 @@
-package me.astrash.discordwikibot.discord;
+package me.astrash.discordmetabot.discord;
 
-import me.astrash.discordwikibot.index.Indexer;
-import me.astrash.discordwikibot.index.QueryResult;
+import me.astrash.discordmetabot.index.Indexer;
+import me.astrash.discordmetabot.index.QueryResult;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;

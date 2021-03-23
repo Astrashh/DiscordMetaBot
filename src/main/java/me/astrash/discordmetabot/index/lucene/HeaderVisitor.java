@@ -1,4 +1,4 @@
-package me.astrash.discordwikibot.index.lucene;
+package me.astrash.discordmetabot.index.lucene;
 
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Heading;

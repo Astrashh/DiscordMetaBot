@@ -1,4 +1,4 @@
-package me.astrash.discordwikibot.util;
+package me.astrash.discordmetabot.util;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,10 +1,10 @@
-package me.astrash.discordwikibot;
+package me.astrash.discordmetabot;
 
-import me.astrash.discordwikibot.discord.MessageListener;
-import me.astrash.discordwikibot.index.Indexer;
-import me.astrash.discordwikibot.index.lucene.LuceneIndexer;
-import me.astrash.discordwikibot.util.BasicConfigHandler;
-import me.astrash.discordwikibot.util.SimpleProgressMonitor;
+import me.astrash.discordmetabot.discord.MessageListener;
+import me.astrash.discordmetabot.index.Indexer;
+import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
+import me.astrash.discordmetabot.util.BasicConfigHandler;
+import me.astrash.discordmetabot.util.SimpleProgressMonitor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.commons.io.FileUtils;
@@ -21,7 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-public class DiscordWikiBot {
+public class DiscordMetaBot {
     public static void main(String[] args) throws IOException, ParseException {
 
         String wikiRepoDir = "./resources/wikiRepo";

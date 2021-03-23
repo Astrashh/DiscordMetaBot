@@ -1,6 +1,6 @@
-package me.astrash.discordwikibot.index.lucene;
+package me.astrash.discordmetabot.index.lucene;
 
-import me.astrash.discordwikibot.index.QueryResult;
+import me.astrash.discordmetabot.index.QueryResult;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;

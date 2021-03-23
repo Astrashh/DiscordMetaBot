@@ -1,4 +1,4 @@
-package me.astrash.discordwikibot.index;
+package me.astrash.discordmetabot.index;
 
 public interface QueryResult {
 

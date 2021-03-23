@@ -1,6 +1,6 @@
-package me.astrash.discordwikibot.index.lucene;
+package me.astrash.discordmetabot.index.lucene;
 
-import me.astrash.discordwikibot.index.Indexer;
+import me.astrash.discordmetabot.index.Indexer;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
