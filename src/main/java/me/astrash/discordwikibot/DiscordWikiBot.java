@@ -69,6 +69,9 @@ public class DiscordWikiBot {
      * Ensures that there is an up to date local copy
      * of a repository storing GitHub wiki pages.
      */
+
+    // TODO - Decouple wiki repo handling into a separate class
+
     private static void setupWikiRepo(String wikiURI, String wikiDir, String wikiBranch) throws IOException, GitAPIException {
 
         // Create directory to store wiki repository if it doesn't exist.

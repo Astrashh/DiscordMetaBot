@@ -72,6 +72,8 @@ public class LuceneIndexer implements Indexer {
         //         users to search for both full pages AND subheadings within pages.
 
         for (String p : getFilesWithExtension(dataPath, ".md")) {
+
+            // TODO - Move getBaseName into utils class
             String baseName = FilenameUtils.getBaseName(p);
             if (baseName.startsWith("_")) continue;
 

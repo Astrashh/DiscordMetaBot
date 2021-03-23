@@ -1,5 +1,6 @@
 package me.astrash.discordwikibot;
 
+import me.astrash.discordwikibot.index.Indexer;
 import me.astrash.discordwikibot.index.lucene.LuceneIndexer;
 import org.apache.lucene.queryparser.classic.ParseException;
 
@@ -10,7 +11,7 @@ public class IndexerTest {
         String indexDir = "./resources/index";
         String wikiRepoDir = "./resources/wikiRepo";
 
-        LuceneIndexer indexer = new LuceneIndexer(wikiRepoDir, indexDir);
+        Indexer indexer = new LuceneIndexer(wikiRepoDir, indexDir);
 
         indexer.query("Making a pack");
         indexer.query("config packs");
