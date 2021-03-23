@@ -130,7 +130,8 @@ public class LuceneIndexer implements Indexer {
             e.printStackTrace();
         }
 
-        return null;
+        // Failed query
+        return new LuceneQueryResult[0];
     }
 
     private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {

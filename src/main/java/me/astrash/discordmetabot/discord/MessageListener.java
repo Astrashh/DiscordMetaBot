@@ -21,8 +21,8 @@ public class MessageListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot()) return;
         // Only respond to non-bots
+        if (event.getAuthor().isBot()) return;
 
         Message message = event.getMessage();
         String content = message.getContentRaw();
@@ -35,40 +35,69 @@ public class MessageListener extends ListenerAdapter {
             System.out.println("========================================================");
             System.out.println("Searching for: " + input);
 
-            EmbedBuilder embedBuilder = new EmbedBuilder()
-                    .setTitle("Displaying pages related to '" + input + "':")
-                    .setColor(0xF8C300);
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            String embedTitle = "Displaying pages related to '" + input + "':";
 
-            QueryResult[] queryResults = indexer.query(input);
-
-            // If there are no results
-            if (queryResults.length < 1) {
-                embedBuilder.setTitle("Your search '" + input + "' did not match any pages!")
-                    .addField(
-                        "Suggestions",
-                        "- Make sure that all words are spelled correctly.\n" +
-                        "- Try different keywords.\n" +
-                        "- Try more general keywords.\n",
-                    false);
+            // Set embed to error message if the input is too long to be displayed
+            if (embedTitle.length() > MessageEmbed.TITLE_MAX_LENGTH) {
+                embedBuilder.setTitle("Your requested search is too long")
+                    .setColor(0xDD0000)
+                    .setDescription("Please use a shorter query!");
             }
-            // If results are found
             else {
-                // Clamp amount of results
-                QueryResult[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
+                embedBuilder
+                        .setTitle(embedTitle)
+                        .setColor(0xF8C300);
 
-                embedBuilder.setTitle("Found " + queryResults.length + " relevant pages");
-                if (queryResults.length > maxResults) {
-                    embedBuilder.appendDescription("*Displaying the first " + maxResults + " most relevant results:*");
+                QueryResult[] queryResults = indexer.query(input);
+
+                // If there are no results
+                if (queryResults.length < 1) {
+                    embedBuilder.setTitle("Your search '" + input + "' did not match any pages!")
+                        .addField(
+                            "Suggestions",
+                            "- Make sure that all words are spelled correctly.\n" +
+                            "- Try different keywords.\n" +
+                            "- Try more general keywords.\n",
+                        false);
                 }
+                // If results are found
+                else {
+                    // Clamp amount of results
+                    QueryResult[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
 
-                // Add results to embed
-                Arrays.stream(displayResults).forEachOrdered(result -> {
-                    embedBuilder.addField(result.getHeading(), result.getDescription(), false);
-                });
+                    // Add cursory info to embed
+                    embedBuilder.setTitle("Found " + queryResults.length + " relevant pages");
+                    if (queryResults.length > maxResults) {
+                        embedBuilder.appendDescription("*Displaying the first " + maxResults + " most relevant results:*");
+                    }
+
+                    // Add results to embed
+                    Arrays.stream(displayResults).forEachOrdered(result -> {
+                        embedBuilder.addField(
+                                clampString(result.getHeading(), MessageEmbed.TITLE_MAX_LENGTH),
+                                clampString(result.getDescription(), MessageEmbed.VALUE_MAX_LENGTH),
+                                false
+                        );
+                    });
+                }
             }
 
+            // Send embed to channel
             MessageEmbed msg = embedBuilder.build();
             channel.sendMessage(msg).queue();
         }
+    }
+
+    // Convenience method
+    private String clampString(String input, int limit) {
+        String output;
+        if (input.length() > limit) {
+            output = input.substring(input.length() - 3) + "...";
+        }
+        else {
+            output = input;
+        }
+        return output;
     }
 }
