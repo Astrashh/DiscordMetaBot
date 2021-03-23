@@ -27,6 +27,6 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'me.astrash.discordwikibot.DiscordWikiBot'
+        attributes 'Main-Class': 'me.astrash.discordmetabot.DiscordMetaBot'
     }
 }
