@@ -13,6 +13,8 @@ import java.util.Arrays;
 
 public class MessageListener extends ListenerAdapter {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageListener.class);
+
     Indexer indexer;
     String baseCommand = "!wiki ";
     String embedImageURL = "https://cdn.discordapp.com/icons/715448651786485780/b913e035edaf9515a922e3e79fdb351a.webp";
@@ -36,8 +38,8 @@ public class MessageListener extends ListenerAdapter {
 
             String input = content.substring(baseCommand.length());
 
-            System.out.println("========================================================");
-            System.out.println("Searching for: " + input);
+            logger.info("========================================================");
+            logger.info("Searching for: " + input);
 
             EmbedBuilder embedBuilder = new EmbedBuilder();
             //embedBuilder.setImage(embedImageURL);

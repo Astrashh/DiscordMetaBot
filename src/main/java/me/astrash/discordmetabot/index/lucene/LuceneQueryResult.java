@@ -10,6 +10,8 @@ import java.io.IOException;
 
 public class LuceneQueryResult implements QueryResult {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
+
     private String heading;
     private String description;
 
@@ -41,7 +43,7 @@ public class LuceneQueryResult implements QueryResult {
             setDescription(pageURL);
         } else {
             // Concern
-            System.err.println("A document without a valid type was returned in a query!");
+            logger.error("A document without a valid type was returned in a query!");
         }
     }
 

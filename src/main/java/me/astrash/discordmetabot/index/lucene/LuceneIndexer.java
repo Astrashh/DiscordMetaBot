@@ -1,5 +1,6 @@
 package me.astrash.discordmetabot.index.lucene;
 
+import me.astrash.discordmetabot.discord.MessageListener;
 import me.astrash.discordmetabot.index.Indexer;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
  * Handles both constructing an index of markdown files, and queries of that index.
  */
 public class LuceneIndexer implements Indexer {
+
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
 
     String dataPath;
     String indexPath;
@@ -95,7 +98,7 @@ public class LuceneIndexer implements Indexer {
 
         // Print index speed
         long duration = (System.nanoTime() - startTime) / 1000000;
-        System.out.println("Index took " + duration + "ms");
+        logger.info("Index took " + duration + "ms");
     }
 
     @Override
@@ -108,22 +111,22 @@ public class LuceneIndexer implements Indexer {
 
             Query query = parser.parse(input);
 
-            System.out.println("Analyzed query: \"" + query.toString("contents") + "\"");
+            logger.debug("Analyzed query: \"" + query.toString("contents") + "\"");
             int matches = searcher.count(query);
 
             if (matches < 1) {
-                System.out.println("No matches found");
+                logger.info("No matches found");
                 return new LuceneQueryResult[0];
             }
 
-            System.out.println("Found " + matches + " results:");
+            logger.info("Found " + matches + " results");
             ScoreDoc[] scoreDocs = searcher.search(query, matches).scoreDocs;
             LuceneQueryResult[] searchResults = LuceneQueryResult.convertScoreDocs(scoreDocs, searcher);
             reader.close();
 
             // Print search speed
             long duration = (System.nanoTime() - startTime) / 1000000;
-            System.out.println("Query took " + duration + "ms");
+            logger.info("Query took " + duration + "ms");
 
             return searchResults;
         } catch (ParseException | IOException e) {

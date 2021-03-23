@@ -10,6 +10,8 @@ import java.util.Properties;
 
 public class BasicConfigHandler {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(BasicConfigHandler.class);
+
     public static void setup(Properties config, String configPath) throws IOException {
 
         Files.createDirectories(Paths.get(configPath));
@@ -17,7 +19,7 @@ public class BasicConfigHandler {
 
         // Make template config if one doesn't exist
         if (!configFile.isFile()) {
-            System.out.println("Fill out the information in " + configPath + " and restart the jar!");
+            logger.info("Fill out the information in " + configPath + " and restart the jar!");
 
             FileWriter configWriter = new FileWriter(configFile);
             configWriter.write(

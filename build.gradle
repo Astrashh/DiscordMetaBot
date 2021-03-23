@@ -20,6 +20,8 @@ dependencies {
     implementation group: 'org.apache.lucene', name: 'lucene-core', version: '8.8.1'
     // https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser
     implementation group: 'org.apache.lucene', name: 'lucene-queryparser', version: '8.8.1'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
     implementation 'org.commonmark:commonmark:0.17.1'

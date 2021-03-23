@@ -14,6 +14,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.FetchResult;
+import org.slf4j.impl.SimpleLogger;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
@@ -23,7 +24,11 @@ import java.util.Properties;
 
 public class DiscordMetaBot {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DiscordMetaBot.class);
+
     public static void main(String[] args) throws IOException, ParseException {
+
+
 
         String wikiRepoDir = "./resources/wikiRepo";
         String indexDir = "./resources/index";
@@ -33,7 +38,7 @@ public class DiscordMetaBot {
         try {
             BasicConfigHandler.setup(config, "./resources");
         } catch (IOException e) {
-            System.err.println("Failed to load config!");
+            logger.error("Failed to load config!");
             e.printStackTrace();
             System.exit(-1);
         }
@@ -42,19 +47,19 @@ public class DiscordMetaBot {
         try {
             setupWikiRepo(config.getProperty("wikiURI"), wikiRepoDir, config.getProperty("wikiPullBranch"));
         } catch (GitAPIException | IOException e) {
-            System.err.println("Failed to set up wiki repository!");
+            logger.error("Failed to set up wiki repository!");
             e.printStackTrace();
         }
 
         // Handles indexing the wiki and search queries
-        System.out.println("Indexing repository...");
+        logger.info("Indexing repository...");
         Indexer indexer = new LuceneIndexer(wikiRepoDir, indexDir);
 
         // Setting up discord bot
         try {
             setupBot(config.getProperty("botToken"), indexer);
         } catch (LoginException e) {
-            System.err.print("Failed to set up Discord bot via JDA!");
+            logger.error("Failed to set up Discord bot via JDA!");
             e.printStackTrace();
         }
     }
@@ -80,10 +85,10 @@ public class DiscordMetaBot {
 
         // Attempt to open repository.
         try (Git git = Git.open(wikiFolder)) {
-            System.out.println("Found repository in " + wikiDir);
+            logger.info("Found repository in " + wikiDir);
 
             // $ git fetch origin
-            System.out.println("JGit - Fetching from remote");
+            logger.debug("JGit - Fetching from remote");
             FetchResult fetchResult = git.fetch()
                     .setRemote("origin")
                     .setProgressMonitor(new SimpleProgressMonitor())
@@ -91,7 +96,7 @@ public class DiscordMetaBot {
             fetchResult.getTrackingRefUpdates().forEach(System.out::println);
 
             // $ git reset --hard origin/branch
-            System.out.println("JGit - Hard resetting to remote tracking branch");
+            logger.debug("JGit - Hard resetting to remote tracking branch");
             git.reset()
                     .setMode(ResetCommand.ResetType.HARD)
                     .setRef("origin/" + wikiBranch)
@@ -100,14 +105,14 @@ public class DiscordMetaBot {
         } catch (RepositoryNotFoundException e) {
 
             // If a repository can't be found, try to clone from remote.
-            System.out.println("Could not find git repository in " + wikiDir);
+            logger.info("Could not find git repository in " + wikiDir);
 
             // Clear files for clone.
-            System.out.println("Clearing files inside " + wikiDir);
+            logger.debug("Clearing files inside " + wikiDir);
             FileUtils.cleanDirectory(wikiFolder);
 
             // $ git clone wikiURI
-            System.out.println("JGit - Cloning " + wikiURI + " to " + wikiDir);
+            logger.debug("JGit - Cloning " + wikiURI + " to " + wikiDir);
             Git git = Git.cloneRepository()
                     .setURI(wikiURI)
                     .setDirectory(wikiFolder)
@@ -118,7 +123,7 @@ public class DiscordMetaBot {
             StoredConfig config = git.getRepository().getConfig();
             config.setString("remote", "origin", "url", wikiURI);
             config.save();
-            System.out.println("Clone successful!");
+            logger.debug("Clone successful!");
         }
     }
 }
