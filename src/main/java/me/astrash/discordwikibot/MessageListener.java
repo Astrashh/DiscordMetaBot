@@ -1,25 +1,23 @@
 package me.astrash.discordwikibot;
 
-import me.astrash.discordwikibot.index.LuceneIndexer;
-import me.astrash.discordwikibot.index.QueryDisplay;
+import me.astrash.discordwikibot.index.Indexer;
+import me.astrash.discordwikibot.index.QueryResult;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.apache.lucene.queryparser.classic.ParseException;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 public class MessageListener extends ListenerAdapter {
 
-    LuceneIndexer indexer;
+    Indexer indexer;
     String baseCommand = "!wiki ";
     int maxResults = 3;
 
-    public MessageListener(LuceneIndexer indexer) {
+    public MessageListener(Indexer indexer) {
         this.indexer = indexer;
     }
 
@@ -43,37 +41,32 @@ public class MessageListener extends ListenerAdapter {
                     .setTitle("Displaying pages related to '" + input + "':")
                     .setColor(0xF8C300);
 
-            try {
-                QueryDisplay[] queryResults = indexer.query(input);
+            QueryResult[] queryResults = indexer.query(input);
 
-                // If there are no results
-                if (queryResults.length < 1) {
-                    embedBuilder.setTitle("Your search '" + input + "' did not match any pages!")
-                        .addField("Suggestions",
-                            "- Make sure that all words are spelled correctly.\n" +
-                            "- Try different keywords.\n" +
-                            "- Try fewer keywords.\n" +
-                            "- Try more general keywords.\n",
-                            false
-                        );
+            // If there are no results
+            if (queryResults.length < 1) {
+                embedBuilder.setTitle("Your search '" + input + "' did not match any pages!")
+                    .addField("Suggestions",
+                        "- Make sure that all words are spelled correctly.\n" +
+                        "- Try different keywords.\n" +
+                        "- Try more general keywords.\n",
+                        false
+                    );
+            }
+            // If results are found
+            else {
+                // Clamp amount of results
+                QueryResult[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
+
+                embedBuilder.setTitle("Found " + queryResults.length + " relevant pages");
+                if (queryResults.length > maxResults) {
+                    embedBuilder.appendDescription("*Displaying the first " + maxResults + " most relevant results:*");
                 }
-                // If results are found
-                else {
-                    // Clamp amount of results
-                    QueryDisplay[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
 
-                    embedBuilder.setTitle("Found " + queryResults.length + " relevant pages");
-                    if (queryResults.length > maxResults) {
-                        embedBuilder.appendDescription("*Displaying the first " + maxResults + " most relevant results:*");
-                    }
-
-                    // Add results to embed
-                    Arrays.stream(displayResults).forEachOrdered(result -> {
-                        embedBuilder.addField(result.getHeading(), result.getDescription(), false);
-                    });
-                }
-            } catch (IOException | ParseException e) {
-                e.printStackTrace();
+                // Add results to embed
+                Arrays.stream(displayResults).forEachOrdered(result -> {
+                    embedBuilder.addField(result.getHeading(), result.getDescription(), false);
+                });
             }
 
             MessageEmbed msg = embedBuilder.build();

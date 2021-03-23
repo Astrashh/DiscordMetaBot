@@ -1,6 +1,7 @@
 package me.astrash.discordwikibot;
 
-import me.astrash.discordwikibot.index.LuceneIndexer;
+import me.astrash.discordwikibot.index.Indexer;
+import me.astrash.discordwikibot.index.lucene.LuceneIndexer;
 import me.astrash.discordwikibot.util.BasicConfigHandler;
 import me.astrash.discordwikibot.util.SimpleProgressMonitor;
 import net.dv8tion.jda.api.JDA;
@@ -44,7 +45,8 @@ public class DiscordWikiBot {
         }
 
         // Handles indexing the wiki and search queries
-        LuceneIndexer indexer = new LuceneIndexer(wikiRepoDir, indexDir);
+        System.out.println("Indexing repository...");
+        Indexer indexer = new LuceneIndexer(wikiRepoDir, indexDir);
 
         // Setting up discord bot
         try {
@@ -55,7 +57,7 @@ public class DiscordWikiBot {
         }
     }
 
-    private static void setupBot(String token, LuceneIndexer indexer) throws LoginException {
+    private static void setupBot(String token, Indexer indexer) throws LoginException {
         JDABuilder builder = JDABuilder.createDefault(token);
         JDA bot = builder
                 .addEventListeners(new MessageListener(indexer))

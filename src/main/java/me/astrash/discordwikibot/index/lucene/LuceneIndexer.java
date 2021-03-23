@@ -1,5 +1,6 @@
-package me.astrash.discordwikibot.index;
+package me.astrash.discordwikibot.index.lucene;
 
+import me.astrash.discordwikibot.index.Indexer;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 /*
  * Handles both constructing an index of markdown files, and queries of that index.
  */
-public class LuceneIndexer {
+public class LuceneIndexer implements Indexer {
 
     String dataPath;
     String indexPath;
@@ -95,31 +96,39 @@ public class LuceneIndexer {
         System.out.println("Index took " + duration + "ms");
     }
 
-    public QueryDisplay[] query(String input) throws IOException, ParseException {
-        long startTime = System.nanoTime();
-        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
-        IndexSearcher searcher = new IndexSearcher(reader);
+    @Override
+    public QueryDisplay[] query(String input) {
 
-        Query query = parser.parse(input);
+        try {
+            long startTime = System.nanoTime();
+            IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
+            IndexSearcher searcher = new IndexSearcher(reader);
 
-        System.out.println("Analyzed query: \"" + query.toString("contents") + "\"");
-        int matches = searcher.count(query);
+            Query query = parser.parse(input);
 
-        if (matches < 1) {
-            System.out.println("No matches found");
-            return new QueryDisplay[0];
+            System.out.println("Analyzed query: \"" + query.toString("contents") + "\"");
+            int matches = searcher.count(query);
+
+            if (matches < 1) {
+                System.out.println("No matches found");
+                return new QueryDisplay[0];
+            }
+
+            System.out.println("Found " + matches + " results:");
+            ScoreDoc[] scoreDocs = searcher.search(query, matches).scoreDocs;
+            QueryDisplay[] searchResults = QueryDisplay.convertScoreDocs(scoreDocs, searcher);
+            reader.close();
+
+            // Print search speed
+            long duration = (System.nanoTime() - startTime) / 1000000;
+            System.out.println("Query took " + duration + "ms");
+
+            return searchResults;
+        } catch (ParseException | IOException e) {
+            e.printStackTrace();
         }
 
-        System.out.println("Found " + matches + " results:");
-        ScoreDoc[] scoreDocs = searcher.search(query, matches).scoreDocs;
-        QueryDisplay[] searchResults = QueryDisplay.convertScoreDocs(scoreDocs, searcher);
-        reader.close();
-
-        // Print search speed
-        long duration = (System.nanoTime() - startTime) / 1000000;
-        System.out.println("Query took " + duration + "ms");
-
-        return searchResults;
+        return null;
     }
 
     private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {

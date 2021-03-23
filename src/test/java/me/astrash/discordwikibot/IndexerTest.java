@@ -1,6 +1,6 @@
 package me.astrash.discordwikibot;
 
-import me.astrash.discordwikibot.index.LuceneIndexer;
+import me.astrash.discordwikibot.index.lucene.LuceneIndexer;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import java.io.IOException;

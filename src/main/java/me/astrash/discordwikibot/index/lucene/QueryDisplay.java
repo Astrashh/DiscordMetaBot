@@ -1,5 +1,6 @@
-package me.astrash.discordwikibot.index;
+package me.astrash.discordwikibot.index.lucene;
 
+import me.astrash.discordwikibot.index.QueryResult;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
@@ -7,7 +8,7 @@ import org.apache.lucene.search.ScoreDoc;
 
 import java.io.IOException;
 
-public class QueryDisplay {
+public class QueryDisplay implements QueryResult {
 
     private String heading;
     private String description;
@@ -60,10 +61,12 @@ public class QueryDisplay {
         return displays;
     }
 
+    @Override
     public String getHeading() {
         return heading;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
