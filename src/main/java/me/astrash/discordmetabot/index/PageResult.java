@@ -1,6 +1,6 @@
 package me.astrash.discordmetabot.index;
 
-public interface QueryResult {
+public interface PageResult {
 
     public String getHeading();
 

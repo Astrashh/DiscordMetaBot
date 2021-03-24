@@ -1,7 +1,7 @@
 package me.astrash.discordmetabot;
 
 import me.astrash.discordmetabot.discord.MessageListener;
-import me.astrash.discordmetabot.index.Indexer;
+import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
 import me.astrash.discordmetabot.util.BasicConfigHandler;
 import me.astrash.discordmetabot.util.SimpleProgressMonitor;
@@ -50,7 +50,7 @@ public class DiscordMetaBot {
 
         // Handles indexing the wiki and search queries
         logger.info("Indexing repository...");
-        Indexer indexer = new LuceneIndexer(wikiRepoDir, indexDir);
+        PageIndex indexer = new LuceneIndexer(wikiRepoDir, indexDir);
 
         // Setting up discord bot
         try {
@@ -61,7 +61,7 @@ public class DiscordMetaBot {
         }
     }
 
-    private static void setupBot(String token, Indexer indexer) throws LoginException {
+    private static void setupBot(String token, PageIndex indexer) throws LoginException {
 
         JDABuilder builder = JDABuilder.createDefault(token);
         JDA bot = builder

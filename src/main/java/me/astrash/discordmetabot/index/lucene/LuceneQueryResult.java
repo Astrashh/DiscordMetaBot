@@ -1,6 +1,6 @@
 package me.astrash.discordmetabot.index.lucene;
 
-import me.astrash.discordmetabot.index.QueryResult;
+import me.astrash.discordmetabot.index.PageResult;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
@@ -8,7 +8,7 @@ import org.apache.lucene.search.ScoreDoc;
 
 import java.io.IOException;
 
-public class LuceneQueryResult implements QueryResult {
+public class LuceneQueryResult implements PageResult {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
 

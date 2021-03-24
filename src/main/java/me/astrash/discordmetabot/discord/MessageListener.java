@@ -1,7 +1,7 @@
 package me.astrash.discordmetabot.discord;
 
-import me.astrash.discordmetabot.index.Indexer;
-import me.astrash.discordmetabot.index.QueryResult;
+import me.astrash.discordmetabot.index.PageIndex;
+import me.astrash.discordmetabot.index.PageResult;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -15,7 +15,7 @@ public class MessageListener extends ListenerAdapter {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageListener.class);
 
-    Indexer indexer;
+    PageIndex indexer;
     String baseCommand = ".t ";
     String wikiSubCommand = "wiki ";
     String infoSubCommand = "info ";
@@ -25,7 +25,7 @@ public class MessageListener extends ListenerAdapter {
     int embedColorError = 0xDD0000;
     int maxResults = 3;
 
-    public MessageListener(Indexer indexer) { this.indexer = indexer; }
+    public MessageListener(PageIndex indexer) { this.indexer = indexer; }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -80,7 +80,7 @@ public class MessageListener extends ListenerAdapter {
                     .setColor(embedColor);
 
             long queryStart = System.nanoTime();
-            QueryResult[] queryResults = indexer.query(input);
+            PageResult[] queryResults = indexer.query(input);
             float queryTime = Duration.ofNanos(System.nanoTime() - queryStart).toMillis();
 
             // If there are no results
@@ -104,7 +104,7 @@ public class MessageListener extends ListenerAdapter {
                 embedBuilder.setFooter(footerText, event.getAuthor().getAvatarUrl());
 
                 // Clamp amount of results
-                QueryResult[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
+                PageResult[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
 
                 // Add cursory info to embed
                 embedBuilder.setTitle("Found " + queryResults.length + " relevant pages");

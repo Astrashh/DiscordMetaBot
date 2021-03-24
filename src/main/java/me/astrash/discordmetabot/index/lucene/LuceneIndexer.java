@@ -1,6 +1,6 @@
 package me.astrash.discordmetabot.index.lucene;
 
-import me.astrash.discordmetabot.index.Indexer;
+import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.parse.MarkdownParser;
 import me.astrash.discordmetabot.parse.commonmark.CommonMarkParser;
 import org.apache.commons.io.FilenameUtils;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 /*
  * Handles both constructing an index of markdown files, and queries of that index.
  */
-public class LuceneIndexer implements Indexer {
+public class LuceneIndexer implements PageIndex {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
 
