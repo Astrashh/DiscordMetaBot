@@ -1,8 +1,10 @@
 package me.astrash.discordmetabot.index.lucene;
 
 import me.astrash.discordmetabot.index.PageIndex;
+import me.astrash.discordmetabot.index.PageResult;
 import me.astrash.discordmetabot.parse.MarkdownParser;
 import me.astrash.discordmetabot.parse.commonmark.CommonMarkParser;
+import me.astrash.discordmetabot.util.Util;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -17,12 +19,8 @@ import org.apache.lucene.store.MMapDirectory;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
-
 /*
  * Handles both constructing an index of markdown files, and queries of that index.
  */
@@ -53,6 +51,42 @@ public class LuceneIndexer implements PageIndex {
         indexWiki();
     }
 
+    @Override
+    public PageResult[] query(String input) {
+
+        try {
+            long startTime = System.nanoTime();
+            IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
+            IndexSearcher searcher = new IndexSearcher(reader);
+
+            Query query = parser.parse(input);
+
+            logger.debug("Analyzed query: \"" + query.toString("contents") + "\"");
+            int matches = searcher.count(query);
+
+            if (matches < 1) {
+                logger.info("No matches found");
+                return new LucenePageResult[0];
+            }
+
+            logger.info("Found " + matches + " results");
+            ScoreDoc[] scoreDocs = searcher.search(query, matches).scoreDocs;
+            PageResult[] searchResults = LucenePageResult.convertScoreDocs(scoreDocs, searcher);
+            reader.close();
+
+            // Print search speed
+            long duration = (System.nanoTime() - startTime) / 1000000;
+            logger.info("Query took " + duration + "ms");
+
+            return searchResults;
+        } catch (ParseException | IOException e) {
+            e.printStackTrace();
+        }
+
+        // Failed query
+        return new LucenePageResult[0];
+    }
+
     /*
      * Scans through the data path and constructs a Lucene index.
      * Both entire files and individual headings inside those files
@@ -73,7 +107,7 @@ public class LuceneIndexer implements PageIndex {
         // TODO -  Treat subheadings within markdown files as separate documents
         //         users to search for both full pages AND subheadings within pages.
 
-        for (String p: getFilesWithExtension(dataPath, ".md")) {
+        for (String p: Util.getFilesWithExtension(dataPath, ".md")) {
 
             // TODO - Move getBaseName into utils class
             String baseName = FilenameUtils.getBaseName(p);
@@ -94,54 +128,6 @@ public class LuceneIndexer implements PageIndex {
         // Print index speed
         long duration = (System.nanoTime() - startTime) / 1000000;
         logger.info("Index took " + duration + "ms");
-    }
-
-    @Override
-    public LuceneQueryResult[] query(String input) {
-
-        try {
-            long startTime = System.nanoTime();
-            IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
-            IndexSearcher searcher = new IndexSearcher(reader);
-
-            Query query = parser.parse(input);
-
-            logger.debug("Analyzed query: \"" + query.toString("contents") + "\"");
-            int matches = searcher.count(query);
-
-            if (matches < 1) {
-                logger.info("No matches found");
-                return new LuceneQueryResult[0];
-            }
-
-            logger.info("Found " + matches + " results");
-            ScoreDoc[] scoreDocs = searcher.search(query, matches).scoreDocs;
-            LuceneQueryResult[] searchResults = LuceneQueryResult.convertScoreDocs(scoreDocs, searcher);
-            reader.close();
-
-            // Print search speed
-            long duration = (System.nanoTime() - startTime) / 1000000;
-            logger.info("Query took " + duration + "ms");
-
-            return searchResults;
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
-        }
-
-        // Failed query
-        return new LuceneQueryResult[0];
-    }
-
-    /*
-     * Returns the paths of files with a certain file extension
-     */
-    private static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
-        return Files
-                .walk(Paths.get(searchDir))
-                .filter(Files::isRegularFile)
-                .map(Path::toString) // Convert file name to a string
-                .filter(fileDir -> fileDir.endsWith(extension)) // Make sure file is markdown
-                .collect(Collectors.toList());
     }
 
     /*

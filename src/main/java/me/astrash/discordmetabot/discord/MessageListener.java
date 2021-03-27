@@ -1,5 +1,6 @@
 package me.astrash.discordmetabot.discord;
 
+import me.astrash.discordmetabot.index.InfoIndex;
 import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.index.PageResult;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -15,17 +16,24 @@ public class MessageListener extends ListenerAdapter {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageListener.class);
 
-    PageIndex indexer;
+    PageIndex pageIndex;
+    InfoIndex infoIndex;
+
     String baseCommand = ".t ";
     String wikiSubCommand = "wiki ";
     String infoSubCommand = "info ";
     String embedImageURL = "https://cdn.discordapp.com/icons/715448651786485780/b913e035edaf9515a922e3e79fdb351a.webp";
+
     int embedColor = 0x2F3136;
     int embedColorWarning = 0xF8C300;
     int embedColorError = 0xDD0000;
+
     int maxResults = 3;
 
-    public MessageListener(PageIndex indexer) { this.indexer = indexer; }
+    public MessageListener(PageIndex indexer, InfoIndex infoIndex) {
+        this.pageIndex = indexer;
+        this.infoIndex = infoIndex;
+    }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -42,19 +50,13 @@ public class MessageListener extends ListenerAdapter {
                 searchWiki(input, event);
             } else if (subContent.startsWith(infoSubCommand)) {
                 String input = subContent.substring(infoSubCommand.length()).split(" ")[0];
-                displayInfo(input, event);
+                displayInfo(input, event, infoIndex);
             }
         }
     }
 
-    private void displayInfo(String page, MessageReceivedEvent event) {
-        EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle(page)
-                .setColor(embedColor)
-                .setDescription("Some information");
-
-        // Send embed to channel
-        MessageEmbed msg = embedBuilder.build();
+    private void displayInfo(String page, MessageReceivedEvent event, InfoIndex index) {
+        MessageEmbed msg = index.query(page);
         event.getChannel().sendMessage(msg).queue();
     }
 
@@ -66,21 +68,16 @@ public class MessageListener extends ListenerAdapter {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setThumbnail(embedImageURL);
 
-        String embedTitle = "Displaying pages related to '" + input + "':";
-
-        // Set embed to error message if the input is too long to be displayed
-        if (embedTitle.length() > MessageEmbed.TITLE_MAX_LENGTH) {
+        if (input.length() > MessageEmbed.TITLE_MAX_LENGTH) {
             embedBuilder
-                    .setTitle("Your requested search is too long")
+                    .setTitle(":exclamation: Your requested search is too long")
                     .setColor(embedColorError)
                     .setDescription("Please use a shorter query!");
         } else {
-            embedBuilder
-                    .setTitle(embedTitle)
-                    .setColor(embedColor);
+            embedBuilder.setColor(embedColor);
 
             long queryStart = System.nanoTime();
-            PageResult[] queryResults = indexer.query(input);
+            PageResult[] queryResults = pageIndex.query(input);
             float queryTime = Duration.ofNanos(System.nanoTime() - queryStart).toMillis();
 
             // If there are no results
@@ -92,8 +89,9 @@ public class MessageListener extends ListenerAdapter {
                     "- Try more general keywords.\n";
 
                 embedBuilder
-                    .setTitle("Your search '" + input + "' did not match any pages!")
-                    .addField("Suggestions", suggestions, false);
+                    .setTitle(":warning: Your search '" + input + "' did not match any pages!")
+                    .addField("Suggestions", suggestions, false)
+                    .setColor(embedColorWarning);
             }
             // If results are found
             else {
@@ -107,19 +105,24 @@ public class MessageListener extends ListenerAdapter {
                 PageResult[] displayResults = Arrays.copyOfRange(queryResults, 0, Math.min(maxResults, queryResults.length));
 
                 // Add cursory info to embed
-                embedBuilder.setTitle("Found " + queryResults.length + " relevant pages");
-                if (queryResults.length > maxResults) {
-                    embedBuilder.appendDescription("*Displaying the first " + maxResults + " most relevant results:*");
+                if (queryResults.length == 1) {
+                    embedBuilder.setTitle(":mag: Found 1 relevant page");
+                }
+                else {
+                    embedBuilder.setTitle(":mag: Found " + queryResults.length + " relevant pages");
+                    if (queryResults.length > maxResults) {
+                        embedBuilder.appendDescription("*Displaying the first " + displayResults.length + " most relevant results:*");
+                    } else {
+                        embedBuilder.appendDescription("\u200B"); // Blank character
+                    }
                 }
 
                 // Add results to embed
-                Arrays.stream(displayResults).forEachOrdered(result -> {
-                    embedBuilder.addField(
-                            clampString(result.getHeading(), MessageEmbed.TITLE_MAX_LENGTH),
-                            clampString(result.getDescription(), MessageEmbed.VALUE_MAX_LENGTH),
-                            false
-                    );
-                });
+                Arrays.stream(displayResults).forEachOrdered(result -> embedBuilder.addField(
+                        clampString(":page_facing_up: " + result.getHeading(), MessageEmbed.TITLE_MAX_LENGTH),
+                        clampString(result.getDescription(), MessageEmbed.VALUE_MAX_LENGTH),
+                        false
+                ));
             }
         }
 

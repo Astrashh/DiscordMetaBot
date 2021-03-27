@@ -1,6 +1,7 @@
 package me.astrash.discordmetabot;
 
 import me.astrash.discordmetabot.discord.MessageListener;
+import me.astrash.discordmetabot.index.InfoIndex;
 import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
 import me.astrash.discordmetabot.util.BasicConfigHandler;
@@ -29,6 +30,7 @@ public class DiscordMetaBot {
 
         String wikiRepoDir = "./resources/wikiRepo";
         String indexDir = "./resources/index";
+        String infoDir = "./resources/info";
 
         // Simple temporary config reader
         Properties config = new Properties();
@@ -52,20 +54,23 @@ public class DiscordMetaBot {
         logger.info("Indexing repository...");
         PageIndex indexer = new LuceneIndexer(wikiRepoDir, indexDir);
 
+        logger.info("Loading information files...");
+        InfoIndex infoIndex = new InfoIndex(infoDir);
+
         // Setting up discord bot
         try {
-            setupBot(config.getProperty("botToken"), indexer);
+            setupBot(config.getProperty("botToken"), indexer, infoIndex);
         } catch (LoginException e) {
             logger.error("Failed to set up Discord bot via JDA!");
             e.printStackTrace();
         }
     }
 
-    private static void setupBot(String token, PageIndex indexer) throws LoginException {
+    private static void setupBot(String token, PageIndex pageIndex, InfoIndex infoIndex) throws LoginException {
 
         JDABuilder builder = JDABuilder.createDefault(token);
         JDA bot = builder
-                .addEventListeners(new MessageListener(indexer))
+                .addEventListeners(new MessageListener(pageIndex, infoIndex))
                 .build();
     }
 
