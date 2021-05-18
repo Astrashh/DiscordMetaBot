@@ -19,7 +19,7 @@ public class DiscordMetaBot {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DiscordMetaBot.class);
 
-    public DiscordMetaBot() throws IOException, ConfigException {
+    public DiscordMetaBot() throws IOException {
         String wikiRepoDir = "./resources/wikiRepo";
         String indexDir = "./resources/index";
         String infoDir = "./resources/info";
@@ -34,21 +34,13 @@ public class DiscordMetaBot {
         logger.info("Loading information files...");
         InfoIndex infoIndex = new InfoIndex(infoDir);
         try {
-            setupBot(config.getDiscordBotToken(), indexer, infoIndex);
+            JDAUtil.setupBot(config.getDiscordBotToken(), indexer, infoIndex);
         } catch (LoginException e) {
             logger.error("Failed to set up Discord bot via JDA!", e);
         }
     }
 
-    private static void setupBot(String token, PageIndex pageIndex, InfoIndex infoIndex) throws LoginException {
-
-        JDABuilder builder = JDABuilder.createDefault(token);
-        JDA bot = builder
-                .addEventListeners(new MessageListener(pageIndex, infoIndex))
-                .build();
-    }
-
-    public static void main(String[] args) throws IOException, ConfigException {
+    public static void main(String[] args) throws IOException {
         new DiscordMetaBot();
     }
 }

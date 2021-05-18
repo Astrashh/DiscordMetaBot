@@ -3,10 +3,7 @@ package me.astrash.discordmetabot.config;
 import com.dfsek.tectonic.exception.ConfigException;
 import com.dfsek.tectonic.loading.ConfigLoader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -14,7 +11,7 @@ public class ConfigHandler {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigHandler.class);
 
-    public static Config setup(String configPath) throws IOException, ConfigException {
+    public static Config setup(String configPath) throws IOException {
 
         Files.createDirectories(Paths.get(configPath));
         File configFile = new File(configPath + "/config.yml");
@@ -38,7 +35,11 @@ public class ConfigHandler {
         FileInputStream configStream = new FileInputStream(configFile);
         Config config = new Config();
         ConfigLoader loader = new ConfigLoader();
-        loader.load(config, configStream);
+        try {
+            loader.load(config, configStream);
+        } catch (ConfigException e) {
+            e.printStackTrace();
+        }
         configStream.close();
         return config;
     }

@@ -14,11 +14,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class GitUtil {
-
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DiscordMetaBot.class);
-
+public final class GitUtil {
     private GitUtil(){}
+
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GitUtil.class);
 
     /*
      * Ensures that there is an up to date local copy
