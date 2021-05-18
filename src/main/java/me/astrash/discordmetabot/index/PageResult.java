@@ -2,8 +2,8 @@ package me.astrash.discordmetabot.index;
 
 public interface PageResult {
 
-    public String getHeading();
+    String getHeading();
 
-    public String getDescription();
+    String getDescription();
 
 }

@@ -18,11 +18,14 @@ public class DiscordMetaBot {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DiscordMetaBot.class);
 
-    public static void main(String[] args) throws IOException {
+    private final String wikiRepoDir;
+    private final String indexDir;
+    private final String infoDir;
 
-        String wikiRepoDir = "./resources/wikiRepo";
-        String indexDir = "./resources/index";
-        String infoDir = "./resources/info";
+    public DiscordMetaBot() throws IOException {
+        wikiRepoDir = "./resources/wikiRepo";
+        indexDir = "./resources/index";
+        infoDir = "./resources/info";
 
         // Simple temporary config reader
         Properties config = new Properties();
