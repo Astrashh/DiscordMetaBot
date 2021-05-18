@@ -97,31 +97,27 @@ public class LuceneIndexer implements PageIndex {
         Directory directory = FSDirectory.open(Paths.get(indexPath));
         IndexWriterConfig config = new IndexWriterConfig(analyzer)
                 .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-        IndexWriter writer = new IndexWriter(directory, config);
 
         // Index all markdown documents in wiki repo
-
         // TODO -  Treat subheadings within markdown files as separate documents
         //         users to search for both full pages AND subheadings within pages.
+        IndexWriter writer = new IndexWriter(directory, config);
 
         for (String p: FileUtil.getFilesWithExtension(dataPath, ".md")) {
 
-            // TODO - Move getBaseName into utils class
             String baseName = FileUtil.getBaseName(p);
             if (baseName.startsWith("_")) continue; // Don't index misc github pages
 
             // Index file
             indexDoc(writer, p, baseName);
 
-            // Index headings
+            // Index headings in file
             MarkdownParser parser = new CommonMarkParser();
             for (String heading: parser.getHeadings(p)) {
                 indexHeader(writer, p, heading);
             }
         }
-
         writer.close();
-
         // Print index speed
         long duration = (System.nanoTime() - startTime) / 1000000;
         logger.info("Index took " + duration + "ms");

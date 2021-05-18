@@ -1,82 +1,46 @@
 package me.astrash.discordmetabot.index;
 
+import com.dfsek.tectonic.exception.ConfigException;
+import com.dfsek.tectonic.loading.ConfigLoader;
+import me.astrash.discordmetabot.config.ConfigHandler;
 import me.astrash.discordmetabot.discord.embed.Embed;
-import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
+import me.astrash.discordmetabot.discord.embed.field.FieldHolder;
+import me.astrash.discordmetabot.discord.embed.field.FieldHolderLoader;
 import me.astrash.discordmetabot.util.FileUtil;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
-import java.io.FileNotFoundException;
+import javax.annotation.Nullable;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-/*
- * Builds up an index of information in the form of discord embeds
- */
 public class InfoIndex {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigHandler.class);
 
-    // IDs of error template embed(s)
-    List<String> errorTemplates = new ArrayList<>(Arrays.asList(
-            "error",
-            "base"
-    ));
-    // Actual embeds of said IDs
-    List<Embed> errorEmbedTemplates = new ArrayList<>();
+    private Map<String, MessageEmbed> embeds = new HashMap<>();
 
-    // Built JDA embeds
-    Map<String, MessageEmbed> messageEmbeds = new HashMap<>();
+    public InfoIndex(String infoPath) throws IOException {
 
-    public InfoIndex(String dataPath) throws IOException {
-        Map<String, Embed> embeds = new HashMap<>();
+        ConfigLoader loader = new ConfigLoader();
+        loader.registerLoader(FieldHolder.class, new FieldHolderLoader());
 
-        // Make embeds from YAML files
-        FileUtil.getFilesWithExtensions(dataPath, new String[]{".yml",".yaml"}).forEach(path -> {
+        FileUtil.getFilesWithExtensions(infoPath, new String[]{".yml",".yaml"}).forEach(path -> {
+            Embed embed = new Embed();
             try {
-                Embed embed = Embed.fromYaml(path);
-                logger.info("Loading embed '" + embed.getId() + "'");
-                embeds.put(embed.getId().toLowerCase(), embed);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
-
-        errorTemplates.forEach(template -> errorEmbedTemplates.add(embeds.get(template)));
-
-        // Add embeds as templates of other embeds as specified in YAML
-        embeds.values().forEach(embed -> {
-            List<Embed> embedTemplates = new ArrayList<>();
-
-            if (embed.getTemplates() != null) {
-                embed.getTemplates().forEach(templateString -> {
-                    if (embeds.get(templateString) != null) embedTemplates.add(embeds.get(templateString));
-                });
-                embed.setEmbedTemplates(embedTemplates);
-            }
-        });
-
-        // Build embeds
-        embeds.values().forEach(embed -> {
-            if (!embed.isTemplate()) {
-                messageEmbeds.put(embed.getId(), embed.build());
+                FileInputStream yaml = new FileInputStream(path);
+                loader.load(embed, yaml);
+                yaml.close();
+                embeds.put(embed.getId(), embed.build());
+            } catch (ConfigException | IOException e) {
+                logger.error("Could not load info file: ", e);
             }
         });
     }
 
+    @Nullable
     public MessageEmbed query(String input) {
-
-        // TODO - Better search functionality
-        //        Allow for more flexibility in searching for info snippets
-        String parsedInput = input.toLowerCase();
-
-        MessageEmbed embed = messageEmbeds.get(parsedInput);
-        if (embed == null) {
-            Embed errorMessage = new Embed();
-            errorMessage.setId("errorMessage");
-            errorMessage.setEmbedTemplates(errorEmbedTemplates);
-            errorMessage.setDescription("Could not find information for '" + parsedInput + "'");
-            return errorMessage.build();
-        }
-        return embed;
+        return embeds.get(input);
     }
 }

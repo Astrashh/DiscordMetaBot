@@ -19,9 +19,9 @@ public class MessageListener extends ListenerAdapter {
     PageIndex pageIndex;
     InfoIndex infoIndex;
 
-    String baseCommand = ".t ";
-    String wikiSubCommand = "wiki ";
-    String infoSubCommand = "info ";
+    String commandPrefix = ".";
+    String[] wikiCommand = {"wiki", "w"};
+    String[] infoCommand = {"info", "i"};
     String embedImageURL = "https://cdn.discordapp.com/icons/715448651786485780/b913e035edaf9515a922e3e79fdb351a.webp";
 
     int embedColor = 0x2F3136;
@@ -43,21 +43,41 @@ public class MessageListener extends ListenerAdapter {
         String content = message.getContentRaw();
 
         // Lazy command parsing
-        if (content.startsWith(baseCommand)) {
-            String subContent = content.substring(baseCommand.length());
-            if (subContent.startsWith(wikiSubCommand)) {
-                String input = subContent.substring(wikiSubCommand.length());
-                searchWiki(input, event);
-            } else if (subContent.startsWith(infoSubCommand)) {
-                String input = subContent.substring(infoSubCommand.length()).split(" ")[0];
-                displayInfo(input, event, infoIndex);
+        if (content.startsWith(commandPrefix)) {
+            String subContent = content.substring(commandPrefix.length());
+            for (String prefix : wikiCommand) {
+                if (subContent.startsWith(prefix)) {
+                    String commandString = subContent.substring(prefix.length());
+                    if (commandString.startsWith(" ")) {
+                        String input = commandString.substring(1);
+                        searchWiki(input, event);
+                        return;
+                    } else {
+                        System.out.println("Print how to search");
+                    }
+                }
+            }
+
+            for (String prefix : infoCommand) {
+                if (subContent.startsWith(prefix)) {
+                    String commandString = subContent.substring(prefix.length());
+                    if (commandString.startsWith(" ")) {
+                        String input = commandString.substring(1).split(" ")[0];
+                        displayInfo(input, event, infoIndex);
+                        return;
+                    } else {
+                        System.out.println("Print how to search");
+                    }
+                }
             }
         }
     }
 
     private void displayInfo(String page, MessageReceivedEvent event, InfoIndex index) {
         MessageEmbed msg = index.query(page);
-        event.getChannel().sendMessage(msg).queue();
+        if (msg != null) {
+            event.getChannel().sendMessage(msg).queue();
+        }
     }
 
     private void searchWiki(String input, MessageReceivedEvent event) {
@@ -126,12 +146,10 @@ public class MessageListener extends ListenerAdapter {
             }
         }
 
-        // Send embed to channel
         MessageEmbed msg = embedBuilder.build();
         event.getChannel().sendMessage(msg).queue();
     }
 
-    // Convenience method
     private String clampString(String input, int limit) {
         String output;
         if (input.length() > limit) {
