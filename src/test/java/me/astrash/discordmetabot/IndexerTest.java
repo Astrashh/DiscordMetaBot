@@ -2,11 +2,14 @@ package me.astrash.discordmetabot;
 
 import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
+import org.junit.Test;
 
 import java.io.IOException;
 
 public class IndexerTest {
-    public static void main(String[] args) throws IOException {
+    @Test
+    public void name() throws IOException {
+
         String indexDir = "./resources/index";
         String wikiRepoDir = "./resources/wikiRepo";
 
