@@ -95,7 +95,8 @@ public class LuceneIndexer implements PageIndex {
         long startTime = System.nanoTime();
         // Creating the index
         Directory directory = FSDirectory.open(Paths.get(indexPath));
-        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+        IndexWriterConfig config = new IndexWriterConfig(analyzer)
+                .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         IndexWriter writer = new IndexWriter(directory, config);
 
         // Index all markdown documents in wiki repo
