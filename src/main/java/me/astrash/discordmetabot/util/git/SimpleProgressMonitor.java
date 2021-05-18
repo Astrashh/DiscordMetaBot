@@ -1,4 +1,4 @@
-package me.astrash.discordmetabot.util;
+package me.astrash.discordmetabot.util.git;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 

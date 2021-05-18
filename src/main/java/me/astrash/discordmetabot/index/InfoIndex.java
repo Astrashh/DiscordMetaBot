@@ -2,7 +2,7 @@ package me.astrash.discordmetabot.index;
 
 import me.astrash.discordmetabot.discord.embed.Embed;
 import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
-import me.astrash.discordmetabot.util.Util;
+import me.astrash.discordmetabot.util.FileUtil;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.io.FileNotFoundException;
@@ -31,7 +31,7 @@ public class InfoIndex {
         Map<String, Embed> embeds = new HashMap<>();
 
         // Make embeds from YAML files
-        Util.getFilesWithExtensions(dataPath, new String[]{".yml",".yaml"}).forEach(path -> {
+        FileUtil.getFilesWithExtensions(dataPath, new String[]{".yml",".yaml"}).forEach(path -> {
             try {
                 Embed embed = Embed.fromYaml(path);
                 logger.info("Loading embed '" + embed.getId() + "'");

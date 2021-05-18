@@ -1,15 +1,20 @@
 package me.astrash.discordmetabot.util;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class Util {
-    private Util(){}
+public final class FileUtil {
+    private FileUtil(){}
+
+    public static String getBaseName(String fileName) {
+        return FilenameUtils.getBaseName(fileName);
+    }
 
     /*
      * Returns the paths of files with a certain file extension

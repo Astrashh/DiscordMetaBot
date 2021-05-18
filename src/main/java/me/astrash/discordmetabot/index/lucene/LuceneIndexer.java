@@ -4,8 +4,7 @@ import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.index.PageResult;
 import me.astrash.discordmetabot.parse.MarkdownParser;
 import me.astrash.discordmetabot.parse.commonmark.CommonMarkParser;
-import me.astrash.discordmetabot.util.Util;
-import org.apache.commons.io.FilenameUtils;
+import me.astrash.discordmetabot.util.FileUtil;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
@@ -14,8 +13,8 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.MMapDirectory;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -34,7 +33,7 @@ public class LuceneIndexer implements PageIndex {
     QueryParser parser;
     Analyzer analyzer;
 
-    public LuceneIndexer(String dataPath, String indexPath) throws IOException, ParseException {
+    public LuceneIndexer(String dataPath, String indexPath) throws IOException {
         this.dataPath = dataPath;
         this.indexPath = indexPath;
 
@@ -43,7 +42,7 @@ public class LuceneIndexer implements PageIndex {
 
         // Set up query parser
         String[] fields = new String[]{"title", "contents"};
-        HashMap<String, Float> boosts = new HashMap<String, Float>();
+        HashMap<String, Float> boosts = new HashMap<>();
         boosts.put("title", (float) 5);
         boosts.put("contents", (float) 1);
         this.parser = new MultiFieldQueryParser(fields, analyzer, boosts);
@@ -92,14 +91,11 @@ public class LuceneIndexer implements PageIndex {
      * Both entire files and individual headings inside those files
      * each get indexed as their own Lucene document inside the index.
      */
-    private void indexWiki() throws IOException, ParseException {
+    private void indexWiki() throws IOException {
         long startTime = System.nanoTime();
         // Creating the index
-        MMapDirectory directory = new MMapDirectory(Paths.get(indexPath));
-        IndexWriterConfig config = new IndexWriterConfig(analyzer)
-                .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-        // Just creates a new index regardless of if it exists.
-        // Could probably make it update an existing index later.
+        Directory directory = FSDirectory.open(Paths.get(indexPath));
+        IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter writer = new IndexWriter(directory, config);
 
         // Index all markdown documents in wiki repo
@@ -107,11 +103,11 @@ public class LuceneIndexer implements PageIndex {
         // TODO -  Treat subheadings within markdown files as separate documents
         //         users to search for both full pages AND subheadings within pages.
 
-        for (String p: Util.getFilesWithExtension(dataPath, ".md")) {
+        for (String p: FileUtil.getFilesWithExtension(dataPath, ".md")) {
 
             // TODO - Move getBaseName into utils class
-            String baseName = FilenameUtils.getBaseName(p);
-            if (baseName.startsWith("_")) continue;
+            String baseName = FileUtil.getBaseName(p);
+            if (baseName.startsWith("_")) continue; // Don't index misc github pages
 
             // Index file
             indexDoc(writer, p, baseName);
