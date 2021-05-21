@@ -1,7 +1,7 @@
 package me.astrash.discordmetabot.index;
 
+import com.dfsek.tectonic.abstraction.AbstractConfigLoader;
 import com.dfsek.tectonic.exception.ConfigException;
-import com.dfsek.tectonic.loading.ConfigLoader;
 import me.astrash.discordmetabot.config.ConfigHandler;
 import me.astrash.discordmetabot.discord.embed.Embed;
 import me.astrash.discordmetabot.discord.embed.field.FieldHolder;
@@ -12,8 +12,12 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import javax.annotation.Nullable;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class InfoIndex {
 
@@ -23,20 +27,24 @@ public class InfoIndex {
 
     public InfoIndex(String infoPath) throws IOException {
 
-        ConfigLoader loader = new ConfigLoader();
+        AbstractConfigLoader loader = new AbstractConfigLoader();
         loader.registerLoader(FieldHolder.class, new FieldHolderLoader());
 
+        List<InputStream> streams = new ArrayList<>();
+
         FileUtil.getFilesWithExtensions(infoPath, new String[]{".yml",".yaml"}).forEach(path -> {
-            Embed embed = new Embed();
             try {
-                FileInputStream yaml = new FileInputStream(path);
-                loader.load(embed, yaml);
-                yaml.close();
-                embeds.put(embed.getId(), embed.build());
-            } catch (ConfigException | IOException e) {
+                streams.add(new FileInputStream(path));
+            } catch (IOException e) {
                 logger.error("Could not load info file: ", e);
             }
         });
+
+        try {
+            embeds = loader.load(streams, Embed::new).stream().collect(Collectors.toMap(Embed::getId, Embed::build));
+        } catch (ConfigException e) {
+            e.printStackTrace();
+        }
     }
 
     @Nullable
