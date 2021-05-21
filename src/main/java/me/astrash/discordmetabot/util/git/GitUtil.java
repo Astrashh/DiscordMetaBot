@@ -1,6 +1,5 @@
 package me.astrash.discordmetabot.util.git;
 
-import me.astrash.discordmetabot.DiscordMetaBot;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -25,7 +24,6 @@ public final class GitUtil {
      */
     public static void setupWikiRepo(String wikiURI, String wikiDir, String wikiBranch) throws IOException, GitAPIException {
 
-        // Create directory to store wiki repository if it doesn't exist.
         Files.createDirectories(Paths.get(wikiDir));
         File wikiFolder = new File(wikiDir);
 

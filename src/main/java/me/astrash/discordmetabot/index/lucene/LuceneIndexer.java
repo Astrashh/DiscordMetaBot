@@ -73,7 +73,6 @@ public class LuceneIndexer implements PageIndex {
             PageResult[] searchResults = LucenePageResult.convertScoreDocs(scoreDocs, searcher);
             reader.close();
 
-            // Print search speed
             long duration = (System.nanoTime() - startTime) / 1000000;
             logger.info("Query took " + duration + "ms");
 

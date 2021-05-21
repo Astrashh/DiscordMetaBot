@@ -22,7 +22,6 @@ public class SimpleProgressMonitor implements ProgressMonitor {
 
     @Override
     public void update(int completed) {
-        //System.out.print(completed + "-");
         logger.debug("-");
     }
 

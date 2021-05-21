@@ -17,14 +17,14 @@ public final class FileUtil {
     }
 
     /*
-     * Returns the paths of files with a certain file extension
+     * Returns the paths of files with the provided file extensions
      */
     public static List<String> getFilesWithExtensions(String searchDir, String[] extensions) throws IOException {
         return Files
                 .walk(Paths.get(searchDir))
                 .filter(Files::isRegularFile)
-                .map(Path::toString) // Convert file name to a string
-                .filter(fileDir -> { // Make sure file ends with extension
+                .map(Path::toString)
+                .filter(fileDir -> {
                     // Probably a much better way of doing this
                     boolean endsWithExtension = false;
                     for (String extension: extensions) {
@@ -38,6 +38,9 @@ public final class FileUtil {
                 .collect(Collectors.toList());
     }
 
+    /*
+     * Returns the paths of files with the provided file extension
+     */
     public static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
         return getFilesWithExtensions(searchDir, new String[]{extension});
     }
