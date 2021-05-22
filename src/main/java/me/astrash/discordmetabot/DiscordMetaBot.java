@@ -1,6 +1,5 @@
 package me.astrash.discordmetabot;
 
-import me.astrash.discordmetabot.config.Config;
 import me.astrash.discordmetabot.index.InfoIndex;
 import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
@@ -11,10 +10,13 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
+import java.nio.file.Paths;
 
 public class DiscordMetaBot {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DiscordMetaBot.class);
+
+    private final ConfigHandler configHandler;
 
     public DiscordMetaBot() throws IOException {
         String resourceDir = "./resources";
@@ -22,9 +24,10 @@ public class DiscordMetaBot {
         String indexDir = resourceDir + "/index";
         String infoDir = resourceDir + "/info";
 
-        Config config = ConfigHandler.setup(resourceDir);
+        configHandler = new ConfigHandler(Paths.get(resourceDir + "/config.yml"));
+
         try {
-            GitUtil.setupWikiRepo(config.getWikiURI(), wikiRepoDir, config.getPullBranch());
+            GitUtil.setupWikiRepo(configHandler.getConfig().getWikiURI(), wikiRepoDir, configHandler.getConfig().getPullBranch());
         } catch (GitAPIException | IOException e) {
             logger.error("Failed to set up wiki repository!", e);
         }
@@ -33,7 +36,7 @@ public class DiscordMetaBot {
         logger.info("Loading information files...");
         InfoIndex infoIndex = new InfoIndex(infoDir);
         try {
-            new BotHandler(config.getDiscordBotToken(), indexer, infoIndex);
+            new BotHandler(configHandler.getConfig().getDiscordBotToken(), indexer, infoIndex);
         } catch (LoginException e) {
             logger.error("Failed to set up Discord bot via JDA!", e);
         }

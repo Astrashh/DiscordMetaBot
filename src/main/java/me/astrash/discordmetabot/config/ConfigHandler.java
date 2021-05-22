@@ -5,35 +5,26 @@ import com.dfsek.tectonic.loading.ConfigLoader;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 public class ConfigHandler {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigHandler.class);
 
-    public static Config setup(String configPath) throws IOException {
+    private final Path path;
+    private Config config = new Config();;
 
-        Files.createDirectories(Paths.get(configPath));
-        File configFile = new File(configPath + "/config.yml");
-
-        // Make template config if one doesn't exist
-        if (!configFile.isFile()) {
-            logger.info("Fill out the information in " + configPath + " and restart the jar!");
-
-            FileWriter configWriter = new FileWriter(configFile);
-            configWriter.write(
-                    "wiki:\n" +
-                    "  uri: \n" +
-                    "  pull-branch: \n" +
-                    "discord:\n" +
-                    "  token: ");
-            configWriter.close();
-
-            System.exit(0);
+    public ConfigHandler(Path path) throws IOException {
+        this.path = path;
+        Files.createDirectories(path.getParent());
+        if (!Files.exists(path)) {
+            dumpDefaultConfig();
         }
+        loadConfig();
+    }
 
-        FileInputStream configStream = new FileInputStream(configFile);
-        Config config = new Config();
+    public void loadConfig() throws IOException {
+        FileInputStream configStream = new FileInputStream(path.toFile());
         ConfigLoader loader = new ConfigLoader();
         try {
             loader.load(config, configStream);
@@ -41,6 +32,22 @@ public class ConfigHandler {
             e.printStackTrace();
         }
         configStream.close();
+    }
+
+    public Config getConfig() {
         return config;
+    }
+
+    private void dumpDefaultConfig() throws IOException {
+        logger.info("Fill out the information in " + path + " and restart the jar!");
+        FileWriter writer = new FileWriter(path.toFile());
+        writer.write(
+                "wiki:\n" +
+                "  uri: \n" +
+                "  pull-branch: \n" +
+                "discord:\n" +
+                "  token: ");
+        writer.close();
+        System.exit(0);
     }
 }
