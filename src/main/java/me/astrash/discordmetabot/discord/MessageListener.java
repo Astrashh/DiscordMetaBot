@@ -1,6 +1,6 @@
 package me.astrash.discordmetabot.discord;
 
-import me.astrash.discordmetabot.index.InfoIndex;
+import me.astrash.discordmetabot.index.TagIndex;
 import me.astrash.discordmetabot.index.page.PageIndex;
 import me.astrash.discordmetabot.index.page.PageResult;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -17,11 +17,11 @@ public class MessageListener extends ListenerAdapter {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageListener.class);
 
     PageIndex pageIndex;
-    InfoIndex infoIndex;
+    TagIndex tagIndex;
 
     String commandPrefix = ".";
     String[] wikiCommand = {"wiki", "w"};
-    String[] infoCommand = {"info", "i"};
+    String[] tagCommand = {"info", "i", "t", "tag"};
     String embedImageURL = "https://cdn.discordapp.com/icons/715448651786485780/b913e035edaf9515a922e3e79fdb351a.webp";
 
     int embedColor = 0x2F3136;
@@ -30,9 +30,9 @@ public class MessageListener extends ListenerAdapter {
 
     int maxResults = 3;
 
-    public MessageListener(PageIndex indexer, InfoIndex infoIndex) {
+    public MessageListener(PageIndex indexer, TagIndex tagIndex) {
         this.pageIndex = indexer;
-        this.infoIndex = infoIndex;
+        this.tagIndex = tagIndex;
     }
 
     @Override
@@ -58,12 +58,12 @@ public class MessageListener extends ListenerAdapter {
                 }
             }
 
-            for (String prefix : infoCommand) {
+            for (String prefix : tagCommand) {
                 if (subContent.startsWith(prefix)) {
                     String commandString = subContent.substring(prefix.length());
                     if (commandString.startsWith(" ")) {
                         String input = commandString.substring(1).split(" ")[0];
-                        displayInfo(input, event, infoIndex);
+                        displayTag(input, event, tagIndex);
                         return;
                     } else {
                         System.out.println("Print how to search");
@@ -73,7 +73,7 @@ public class MessageListener extends ListenerAdapter {
         }
     }
 
-    private void displayInfo(String page, MessageReceivedEvent event, InfoIndex index) {
+    private void displayTag(String page, MessageReceivedEvent event, TagIndex index) {
         MessageEmbed msg = index.query(page);
         if (msg != null) {
             event.getChannel().sendMessage(msg).queue();

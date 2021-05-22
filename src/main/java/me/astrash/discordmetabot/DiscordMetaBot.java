@@ -2,7 +2,7 @@ package me.astrash.discordmetabot;
 
 import me.astrash.discordmetabot.config.ConfigHandler;
 import me.astrash.discordmetabot.discord.BotHandler;
-import me.astrash.discordmetabot.index.InfoIndex;
+import me.astrash.discordmetabot.index.TagIndex;
 import me.astrash.discordmetabot.index.page.PageIndex;
 import me.astrash.discordmetabot.index.page.lucene.LuceneIndexer;
 import me.astrash.discordmetabot.util.git.GitUtil;
@@ -25,7 +25,7 @@ public class DiscordMetaBot {
         Path
             wikiRepoPath = Paths.get(resourceDir + "/wikiRepo"),
             indexPath = Paths.get(resourceDir + "/index"),
-            infoPath = Paths.get(resourceDir + "/info");
+            tagPath = Paths.get(resourceDir + "/tags");
 
         configHandler = new ConfigHandler(Paths.get(resourceDir + "/config.yml"));
 
@@ -37,9 +37,9 @@ public class DiscordMetaBot {
         logger.info("Indexing repository...");
         PageIndex indexer = new LuceneIndexer(wikiRepoPath, indexPath);
         logger.info("Loading information files...");
-        InfoIndex infoIndex = new InfoIndex(infoPath);
+        TagIndex tagIndex = new TagIndex(tagPath);
         try {
-            new BotHandler(configHandler.getConfig().getDiscordBotToken(), indexer, infoIndex);
+            new BotHandler(configHandler.getConfig().getDiscordBotToken(), indexer, tagIndex);
         } catch (LoginException e) {
             logger.error("Failed to set up Discord bot via JDA!", e);
         }

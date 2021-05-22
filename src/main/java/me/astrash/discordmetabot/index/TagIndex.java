@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,24 +21,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class InfoIndex implements Index<String, MessageEmbed> {
+public class TagIndex implements Index<String, MessageEmbed> {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigHandler.class);
 
     private Map<String, MessageEmbed> embeds = new HashMap<>();
 
-    public InfoIndex(Path infoPath) throws IOException {
+    public TagIndex(Path tagPath) throws IOException {
 
         AbstractConfigLoader loader = new AbstractConfigLoader();
         loader.registerLoader(FieldHolder.class, new FieldHolderLoader());
 
         List<InputStream> streams = new ArrayList<>();
 
-        FileUtil.getFilesWithExtensions(infoPath, new String[]{".yml",".yaml"}).forEach(path -> {
+        Files.createDirectories(tagPath);
+        FileUtil.getFilesWithExtensions(tagPath, new String[]{".yml",".yaml"}).forEach(path -> {
             try {
                 streams.add(new FileInputStream(path));
             } catch (IOException e) {
-                logger.error("Could not load info file: ", e);
+                logger.error("Could not load tag file: ", e);
             }
         });
 
