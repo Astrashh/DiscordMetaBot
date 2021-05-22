@@ -1,11 +1,13 @@
 package me.astrash.discordmetabot;
 
 import me.astrash.discordmetabot.config.ConfigHandler;
-import me.astrash.discordmetabot.discord.BotHandler;
+import me.astrash.discordmetabot.discord.TagCommandListener;
+import me.astrash.discordmetabot.discord.WikiCommandListener;
 import me.astrash.discordmetabot.index.TagIndex;
 import me.astrash.discordmetabot.index.page.PageIndex;
 import me.astrash.discordmetabot.index.page.lucene.LuceneIndexer;
 import me.astrash.discordmetabot.util.git.GitUtil;
+import net.dv8tion.jda.api.JDABuilder;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import javax.security.auth.login.LoginException;
@@ -24,25 +26,34 @@ public class DiscordMetaBot {
         String resourceDir = "./resources";
         Path
             wikiRepoPath = Paths.get(resourceDir + "/wikiRepo"),
-            indexPath = Paths.get(resourceDir + "/index"),
-            tagPath = Paths.get(resourceDir + "/tags");
+            indexPath    = Paths.get(resourceDir + "/index"),
+            tagPath      = Paths.get(resourceDir + "/tags");
 
+        // Load config
         configHandler = new ConfigHandler(Paths.get(resourceDir + "/config.yml"));
 
+        // Clone wiki repo locally
         try {
             GitUtil.setupWikiRepo(configHandler.getConfig().getWikiURI(), wikiRepoPath, configHandler.getConfig().getPullBranch());
-        } catch (GitAPIException | IOException e) {
-            logger.error("Failed to set up wiki repository!", e);
-        }
+        } catch (GitAPIException e) { logger.error("Failed to set up wiki repository!", e); }
+
+        // Create an index for wiki pages
         logger.info("Indexing repository...");
-        PageIndex indexer = new LuceneIndexer(wikiRepoPath, indexPath);
-        logger.info("Loading information files...");
+        PageIndex wikiIndex = new LuceneIndexer(wikiRepoPath, indexPath);
+
+        // Create an index for tags
+        logger.info("Loading tag files...");
         TagIndex tagIndex = new TagIndex(tagPath);
+
+        // Set up bot
         try {
-            new BotHandler(configHandler.getConfig().getDiscordBotToken(), indexer, tagIndex);
-        } catch (LoginException e) {
-            logger.error("Failed to set up Discord bot via JDA!", e);
-        }
+            JDABuilder builder = JDABuilder.createDefault(configHandler.getConfig().getDiscordBotToken());
+            builder
+                .addEventListeners(
+                    new TagCommandListener(tagIndex),
+                    new WikiCommandListener(wikiIndex))
+                .build();
+        } catch (LoginException e) { logger.error("Failed to set up Discord bot!", e); }
     }
 
     public static void main(String[] args) throws IOException {

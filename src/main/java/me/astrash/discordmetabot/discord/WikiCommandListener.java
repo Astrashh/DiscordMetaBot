@@ -1,6 +1,5 @@
 package me.astrash.discordmetabot.discord;
 
-import me.astrash.discordmetabot.index.TagIndex;
 import me.astrash.discordmetabot.index.page.PageIndex;
 import me.astrash.discordmetabot.index.page.PageResult;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -12,16 +11,14 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import java.time.Duration;
 import java.util.Arrays;
 
-public class MessageListener extends ListenerAdapter {
+public class WikiCommandListener extends ListenerAdapter {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageListener.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WikiCommandListener.class);
 
     PageIndex pageIndex;
-    TagIndex tagIndex;
 
     String commandPrefix = ".";
-    String[] wikiCommand = {"wiki", "w"};
-    String[] tagCommand = {"info", "i", "t", "tag"};
+    String[] commandAliases = {"wiki", "w"};
     String embedImageURL = "https://cdn.discordapp.com/icons/715448651786485780/b913e035edaf9515a922e3e79fdb351a.webp";
 
     int embedColor = 0x2F3136;
@@ -30,9 +27,8 @@ public class MessageListener extends ListenerAdapter {
 
     int maxResults = 3;
 
-    public MessageListener(PageIndex indexer, TagIndex tagIndex) {
+    public WikiCommandListener(PageIndex indexer) {
         this.pageIndex = indexer;
-        this.tagIndex = tagIndex;
     }
 
     @Override
@@ -42,10 +38,9 @@ public class MessageListener extends ListenerAdapter {
         Message message = event.getMessage();
         String content = message.getContentRaw();
 
-        // Lazy command parsing
         if (content.startsWith(commandPrefix)) {
             String subContent = content.substring(commandPrefix.length());
-            for (String prefix : wikiCommand) {
+            for (String prefix : commandAliases) {
                 if (subContent.startsWith(prefix)) {
                     String commandString = subContent.substring(prefix.length());
                     if (commandString.startsWith(" ")) {
@@ -57,26 +52,6 @@ public class MessageListener extends ListenerAdapter {
                     }
                 }
             }
-
-            for (String prefix : tagCommand) {
-                if (subContent.startsWith(prefix)) {
-                    String commandString = subContent.substring(prefix.length());
-                    if (commandString.startsWith(" ")) {
-                        String input = commandString.substring(1).split(" ")[0];
-                        displayTag(input, event, tagIndex);
-                        return;
-                    } else {
-                        System.out.println("Print how to search");
-                    }
-                }
-            }
-        }
-    }
-
-    private void displayTag(String page, MessageReceivedEvent event, TagIndex index) {
-        MessageEmbed msg = index.query(page);
-        if (msg != null) {
-            event.getChannel().sendMessage(msg).queue();
         }
     }
 
