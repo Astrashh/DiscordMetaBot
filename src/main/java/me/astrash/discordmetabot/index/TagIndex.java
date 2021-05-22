@@ -4,8 +4,8 @@ import com.dfsek.tectonic.abstraction.AbstractConfigLoader;
 import com.dfsek.tectonic.exception.ConfigException;
 import me.astrash.discordmetabot.config.ConfigHandler;
 import me.astrash.discordmetabot.discord.embed.Embed;
-import me.astrash.discordmetabot.discord.embed.field.FieldHolder;
-import me.astrash.discordmetabot.discord.embed.field.FieldHolderLoader;
+import me.astrash.discordmetabot.discord.embed.field.Field;
+import me.astrash.discordmetabot.discord.embed.field.FieldLoader;
 import me.astrash.discordmetabot.util.FileUtil;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
@@ -30,7 +30,7 @@ public class TagIndex implements Index<String, MessageEmbed> {
     public TagIndex(Path tagPath) throws IOException {
 
         AbstractConfigLoader loader = new AbstractConfigLoader();
-        loader.registerLoader(FieldHolder.class, new FieldHolderLoader());
+        loader.registerLoader(Field.class, new FieldLoader());
 
         List<InputStream> streams = new ArrayList<>();
 

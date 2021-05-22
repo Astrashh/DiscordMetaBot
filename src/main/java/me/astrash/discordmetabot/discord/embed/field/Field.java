@@ -3,6 +3,7 @@ package me.astrash.discordmetabot.discord.embed.field;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 public class Field {
+
     private String name;
     private String value;
     private boolean inline;

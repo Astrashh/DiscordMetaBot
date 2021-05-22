@@ -4,10 +4,14 @@ import com.dfsek.tectonic.annotations.Abstractable;
 import com.dfsek.tectonic.annotations.Default;
 import com.dfsek.tectonic.annotations.Value;
 import com.dfsek.tectonic.config.ConfigTemplate;
-import me.astrash.discordmetabot.discord.embed.field.FieldHolder;
+import me.astrash.discordmetabot.discord.embed.field.Field;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Embed implements ConfigTemplate {
 
@@ -21,12 +25,17 @@ public class Embed implements ConfigTemplate {
                 .setImage(image)
                 .setThumbnail(thumbnail)
                 .setColor(color);
-        fields.getFields().forEach(field -> builder.addField(field.build()));
+
+        fields.forEach(field -> builder.addField(field.build()));
         return builder.build();
     }
 
     @Value("id")
     private String id;
+
+    @Value("aliases")
+    @Default
+    private List<String> aliases = new ArrayList<>();
 
     @Value("author.name")
     @Abstractable
@@ -61,7 +70,7 @@ public class Embed implements ConfigTemplate {
     @Value("fields")
     @Abstractable
     @Default
-    private FieldHolder fields = FieldHolder.getEmptyHolder();
+    private List<Field> fields = Collections.emptyList();
 
     @Value("footer.text")
     @Abstractable
