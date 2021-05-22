@@ -1,7 +1,7 @@
-package me.astrash.discordmetabot.index.lucene;
+package me.astrash.discordmetabot.index.page.lucene;
 
-import me.astrash.discordmetabot.index.PageIndex;
-import me.astrash.discordmetabot.index.PageResult;
+import me.astrash.discordmetabot.index.page.PageIndex;
+import me.astrash.discordmetabot.index.page.PageResult;
 import me.astrash.discordmetabot.parse.MarkdownParser;
 import me.astrash.discordmetabot.parse.commonmark.CommonMarkParser;
 import me.astrash.discordmetabot.util.FileUtil;
@@ -31,7 +31,7 @@ import java.util.HashMap;
 /*
  * Handles both constructing an index of markdown files, and queries of that index.
  */
-public class LuceneIndexer implements PageIndex {
+public class LuceneIndexer implements PageIndex<String> {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
 

@@ -1,7 +1,7 @@
 package me.astrash.discordmetabot;
 
-import me.astrash.discordmetabot.index.PageIndex;
-import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
+import me.astrash.discordmetabot.index.page.PageIndex;
+import me.astrash.discordmetabot.index.page.lucene.LuceneIndexer;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -3,8 +3,8 @@ package me.astrash.discordmetabot;
 import me.astrash.discordmetabot.config.ConfigHandler;
 import me.astrash.discordmetabot.discord.BotHandler;
 import me.astrash.discordmetabot.index.InfoIndex;
-import me.astrash.discordmetabot.index.PageIndex;
-import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
+import me.astrash.discordmetabot.index.page.PageIndex;
+import me.astrash.discordmetabot.index.page.lucene.LuceneIndexer;
 import me.astrash.discordmetabot.util.git.GitUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
 

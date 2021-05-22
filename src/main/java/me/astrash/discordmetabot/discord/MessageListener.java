@@ -1,8 +1,8 @@
 package me.astrash.discordmetabot.discord;
 
 import me.astrash.discordmetabot.index.InfoIndex;
-import me.astrash.discordmetabot.index.PageIndex;
-import me.astrash.discordmetabot.index.PageResult;
+import me.astrash.discordmetabot.index.page.PageIndex;
+import me.astrash.discordmetabot.index.page.PageResult;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;

@@ -1,7 +1,7 @@
 package me.astrash.discordmetabot.discord;
 
 import me.astrash.discordmetabot.index.InfoIndex;
-import me.astrash.discordmetabot.index.PageIndex;
+import me.astrash.discordmetabot.index.page.PageIndex;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 
