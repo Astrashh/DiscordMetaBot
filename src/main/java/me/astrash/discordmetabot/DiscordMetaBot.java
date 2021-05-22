@@ -20,6 +20,7 @@ public class DiscordMetaBot {
 
     public DiscordMetaBot() throws IOException {
         String resourceDir = "./resources";
+
         String wikiRepoDir = resourceDir + "/wikiRepo";
         String indexDir = resourceDir + "/index";
         String infoDir = resourceDir + "/info";

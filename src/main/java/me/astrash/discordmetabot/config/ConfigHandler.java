@@ -12,7 +12,7 @@ public class ConfigHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigHandler.class);
 
     private final Path path;
-    private Config config = new Config();;
+    private Config config = new Config();
 
     public ConfigHandler(Path path) throws IOException {
         this.path = path;
@@ -39,7 +39,6 @@ public class ConfigHandler {
     }
 
     private void dumpDefaultConfig() throws IOException {
-        logger.info("Fill out the information in " + path + " and restart the jar!");
         FileWriter writer = new FileWriter(path.toFile());
         writer.write(
                 "wiki:\n" +
@@ -48,6 +47,8 @@ public class ConfigHandler {
                 "discord:\n" +
                 "  token: ");
         writer.close();
+
+        logger.info("Fill out the information in " + path + " and restart the jar!");
         System.exit(0);
     }
 }
