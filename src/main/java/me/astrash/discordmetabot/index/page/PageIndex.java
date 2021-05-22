@@ -2,7 +2,7 @@ package me.astrash.discordmetabot.index.page;
 
 import me.astrash.discordmetabot.index.Index;
 
-public interface PageIndex<T> extends Index<T, PageResult[]> {
+public interface PageIndex extends Index<String, PageResult[]> {
 
     PageResult[] query(String input);
 

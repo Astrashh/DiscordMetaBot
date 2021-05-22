@@ -31,7 +31,7 @@ import java.util.HashMap;
 /*
  * Handles both constructing an index of markdown files, and queries of that index.
  */
-public class LuceneIndexer implements PageIndex<String> {
+public class LuceneIndexer implements PageIndex {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
 
