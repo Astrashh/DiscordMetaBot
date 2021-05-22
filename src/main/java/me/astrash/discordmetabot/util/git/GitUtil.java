@@ -11,7 +11,7 @@ import org.eclipse.jgit.transport.FetchResult;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 public final class GitUtil {
     private GitUtil(){}
@@ -22,14 +22,14 @@ public final class GitUtil {
      * Ensures that there is an up to date local copy
      * of a repository storing GitHub wiki pages.
      */
-    public static void setupWikiRepo(String wikiURI, String wikiDir, String wikiBranch) throws IOException, GitAPIException {
+    public static void setupWikiRepo(String wikiURI, Path wikiPath, String wikiBranch) throws IOException, GitAPIException {
 
-        Files.createDirectories(Paths.get(wikiDir));
-        File wikiFolder = new File(wikiDir);
+        Files.createDirectories(wikiPath);
+        File wikiFolder = wikiPath.toFile();
 
         // Attempt to open repository.
         try (Git git = Git.open(wikiFolder)) {
-            logger.info("Found repository in " + wikiDir);
+            logger.info("Found repository in " + wikiPath);
 
             // $ git fetch origin
             logger.debug("JGit - Fetching from remote");
@@ -49,14 +49,14 @@ public final class GitUtil {
         } catch (RepositoryNotFoundException e) {
 
             // If a repository can't be found, try to clone from remote.
-            logger.info("Could not find git repository in " + wikiDir);
+            logger.info("Could not find git repository in " + wikiPath);
 
             // Clear files for clone.
-            logger.debug("Clearing files inside " + wikiDir);
+            logger.debug("Clearing files inside " + wikiPath);
             FileUtils.cleanDirectory(wikiFolder);
 
             // $ git clone wikiURI
-            logger.debug("JGit - Cloning " + wikiURI + " to " + wikiDir);
+            logger.debug("JGit - Cloning " + wikiURI + " to " + wikiPath);
             Git git = Git.cloneRepository()
                     .setURI(wikiURI)
                     .setDirectory(wikiFolder)

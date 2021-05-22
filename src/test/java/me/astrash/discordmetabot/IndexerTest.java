@@ -5,15 +5,18 @@ import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class IndexerTest {
     @Test
     public void name() throws IOException {
 
-        String indexDir = "./resources/index";
-        String wikiRepoDir = "./resources/wikiRepo";
+        Path
+            indexPath = Paths.get("./resources/index"),
+            wikiRepoPath = Paths.get("./resources/wikiRepo");
 
-        PageIndex indexer = new LuceneIndexer(wikiRepoDir, indexDir);
+        PageIndex indexer = new LuceneIndexer(wikiRepoPath, indexPath);
 
         indexer.query("Making a pack");
         indexer.query("config packs");

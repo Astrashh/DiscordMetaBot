@@ -1,15 +1,16 @@
 package me.astrash.discordmetabot;
 
+import me.astrash.discordmetabot.config.ConfigHandler;
+import me.astrash.discordmetabot.discord.BotHandler;
 import me.astrash.discordmetabot.index.InfoIndex;
 import me.astrash.discordmetabot.index.PageIndex;
 import me.astrash.discordmetabot.index.lucene.LuceneIndexer;
-import me.astrash.discordmetabot.config.ConfigHandler;
-import me.astrash.discordmetabot.discord.BotHandler;
 import me.astrash.discordmetabot.util.git.GitUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import javax.security.auth.login.LoginException;
-import java.io.*;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class DiscordMetaBot {
@@ -19,23 +20,24 @@ public class DiscordMetaBot {
     private final ConfigHandler configHandler;
 
     public DiscordMetaBot() throws IOException {
-        String resourceDir = "./resources";
 
-        String wikiRepoDir = resourceDir + "/wikiRepo";
-        String indexDir = resourceDir + "/index";
-        String infoDir = resourceDir + "/info";
+        String resourceDir = "./resources";
+        Path
+            wikiRepoPath = Paths.get(resourceDir + "/wikiRepo"),
+            indexPath = Paths.get(resourceDir + "/index"),
+            infoPath = Paths.get(resourceDir + "/info");
 
         configHandler = new ConfigHandler(Paths.get(resourceDir + "/config.yml"));
 
         try {
-            GitUtil.setupWikiRepo(configHandler.getConfig().getWikiURI(), wikiRepoDir, configHandler.getConfig().getPullBranch());
+            GitUtil.setupWikiRepo(configHandler.getConfig().getWikiURI(), wikiRepoPath, configHandler.getConfig().getPullBranch());
         } catch (GitAPIException | IOException e) {
             logger.error("Failed to set up wiki repository!", e);
         }
         logger.info("Indexing repository...");
-        PageIndex indexer = new LuceneIndexer(wikiRepoDir, indexDir);
+        PageIndex indexer = new LuceneIndexer(wikiRepoPath, indexPath);
         logger.info("Loading information files...");
-        InfoIndex infoIndex = new InfoIndex(infoDir);
+        InfoIndex infoIndex = new InfoIndex(infoPath);
         try {
             new BotHandler(configHandler.getConfig().getDiscordBotToken(), indexer, infoIndex);
         } catch (LoginException e) {

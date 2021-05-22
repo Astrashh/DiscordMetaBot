@@ -8,16 +8,24 @@ import me.astrash.discordmetabot.util.FileUtil;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 /*
@@ -27,13 +35,13 @@ public class LuceneIndexer implements PageIndex {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
 
-    String dataPath;
-    String indexPath;
+    Path dataPath;
+    Path indexPath;
 
     QueryParser parser;
     Analyzer analyzer;
 
-    public LuceneIndexer(String dataPath, String indexPath) throws IOException {
+    public LuceneIndexer(Path dataPath, Path indexPath) throws IOException {
         this.dataPath = dataPath;
         this.indexPath = indexPath;
 
@@ -55,7 +63,7 @@ public class LuceneIndexer implements PageIndex {
 
         try {
             long startTime = System.nanoTime();
-            IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath)));
+            IndexReader reader = DirectoryReader.open(FSDirectory.open(indexPath));
             IndexSearcher searcher = new IndexSearcher(reader);
 
             Query query = parser.parse(input);
@@ -93,7 +101,7 @@ public class LuceneIndexer implements PageIndex {
     private void indexWiki() throws IOException {
         long startTime = System.nanoTime();
         // Creating the index
-        Directory directory = FSDirectory.open(Paths.get(indexPath));
+        Directory directory = FSDirectory.open(indexPath);
         IndexWriterConfig config = new IndexWriterConfig(analyzer)
                 .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 

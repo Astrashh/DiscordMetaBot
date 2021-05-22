@@ -5,7 +5,6 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,9 +18,9 @@ public final class FileUtil {
     /*
      * Returns the paths of files with the provided file extensions
      */
-    public static List<String> getFilesWithExtensions(String searchDir, String[] extensions) throws IOException {
+    public static List<String> getFilesWithExtensions(Path searchDir, String[] extensions) throws IOException {
         return Files
-                .walk(Paths.get(searchDir))
+                .walk(searchDir)
                 .filter(Files::isRegularFile)
                 .map(Path::toString)
                 .filter(fileDir -> {
@@ -41,7 +40,7 @@ public final class FileUtil {
     /*
      * Returns the paths of files with the provided file extension
      */
-    public static List<String> getFilesWithExtension(String searchDir, String extension) throws IOException {
+    public static List<String> getFilesWithExtension(Path searchDir, String extension) throws IOException {
         return getFilesWithExtensions(searchDir, new String[]{extension});
     }
 }

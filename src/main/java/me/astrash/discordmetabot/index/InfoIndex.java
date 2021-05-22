@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,7 @@ public class InfoIndex {
 
     private Map<String, MessageEmbed> embeds = new HashMap<>();
 
-    public InfoIndex(String infoPath) throws IOException {
+    public InfoIndex(Path infoPath) throws IOException {
 
         AbstractConfigLoader loader = new AbstractConfigLoader();
         loader.registerLoader(FieldHolder.class, new FieldHolderLoader());
