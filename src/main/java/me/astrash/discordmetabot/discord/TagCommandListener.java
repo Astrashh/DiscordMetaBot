@@ -1,7 +1,7 @@
 package me.astrash.discordmetabot.discord;
 
 import me.astrash.discordmetabot.index.TagIndex;
-import net.dv8tion.jda.api.entities.Message;
+import me.astrash.discordmetabot.util.CommandUtil;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -22,17 +22,12 @@ public class TagCommandListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
-
-        Message message = event.getMessage();
-        String content = message.getContentRaw();
-
-        if (content.startsWith(commandPrefix)) {
-            String subContent = content.substring(commandPrefix.length());
+        StringBuilder command = new StringBuilder(event.getMessage().getContentRaw());
+        if (CommandUtil.consumePrefix(command, commandPrefix)) {
             for (String prefix : commandAliases) {
-                if (subContent.startsWith(prefix)) {
-                    String commandString = subContent.substring(prefix.length());
-                    if (commandString.startsWith(" ")) {
-                        String input = commandString.substring(1).split(" ")[0];
+                if (CommandUtil.consumePrefix(command, prefix)) {
+                    if (command.toString().startsWith(" ")) {
+                        String input = command.substring(1).split(" ")[0];
                         displayTag(input, event, tagIndex);
                         return;
                     } else {
