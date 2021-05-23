@@ -1,5 +1,3 @@
-package me.astrash.discordmetabot;
-
 import me.astrash.discordmetabot.index.page.PageIndex;
 import me.astrash.discordmetabot.index.page.lucene.LuceneIndexer;
 import org.junit.Test;
