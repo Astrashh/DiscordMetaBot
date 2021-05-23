@@ -1,7 +1,9 @@
 package me.astrash.discordmetabot.util;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +15,10 @@ public final class FileUtil {
 
     public static String getBaseName(String fileName) {
         return FilenameUtils.getBaseName(fileName);
+    }
+
+    public static void cleanDirectory(File directory) throws IOException {
+        FileUtils.cleanDirectory(directory);
     }
 
     /*

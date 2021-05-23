@@ -25,7 +25,7 @@ public class DiscordMetaBot {
 
         String resourceDir = "./resources";
         Path
-            wikiRepoPath = Paths.get(resourceDir + "/wikiRepo"),
+            wikiRepoPath = Paths.get(resourceDir + "/wiki"),
             indexPath    = Paths.get(resourceDir + "/index"),
             tagPath      = Paths.get(resourceDir + "/tags");
 
@@ -34,7 +34,7 @@ public class DiscordMetaBot {
 
         // Clone wiki repo locally
         try {
-            GitUtil.setupWikiRepo(configHandler.getConfig().getWikiURI(), wikiRepoPath, configHandler.getConfig().getPullBranch());
+            GitUtil.setupRepo(configHandler.getConfig().getWikiURI(), wikiRepoPath, configHandler.getConfig().getPullBranch());
         } catch (GitAPIException e) { logger.error("Failed to set up wiki repository!", e); }
 
         // Create an index for wiki pages

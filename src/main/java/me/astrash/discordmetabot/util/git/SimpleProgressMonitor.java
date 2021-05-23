@@ -12,22 +12,22 @@ public class SimpleProgressMonitor implements ProgressMonitor {
 
     @Override
     public void start(int totalTasks) {
-        logger.debug("Starting work on " + totalTasks + " tasks");
+        logger.info("Starting work on " + totalTasks + " tasks");
     }
 
     @Override
     public void beginTask(String title, int totalWork) {
-        logger.debug(" " + title + ": " + totalWork);
+        logger.info(" " + title + ": " + totalWork);
     }
 
     @Override
     public void update(int completed) {
-        logger.debug("-");
+        logger.info("-");
     }
 
     @Override
     public void endTask() {
-        logger.debug(" Done");
+        logger.info(" Done");
     }
 
     @Override
