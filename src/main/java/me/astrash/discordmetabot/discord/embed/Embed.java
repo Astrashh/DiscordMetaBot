@@ -25,7 +25,6 @@ public class Embed implements ConfigTemplate {
                 .setImage(image)
                 .setThumbnail(thumbnail)
                 .setColor(color);
-
         fields.forEach(field -> builder.addField(field.build()));
         return builder.build();
     }

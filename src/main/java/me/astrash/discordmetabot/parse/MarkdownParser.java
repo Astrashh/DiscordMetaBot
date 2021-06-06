@@ -5,6 +5,6 @@ import java.util.List;
 
 public interface MarkdownParser {
 
-    public List<String> getHeadings(String filePath) throws IOException;
+    List<String> getHeadings(int headerDepth) throws IOException;
 
 }

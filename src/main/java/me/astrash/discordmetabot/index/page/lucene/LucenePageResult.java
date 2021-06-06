@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class LucenePageResult implements PageResult {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndexer.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LuceneIndex.class);
 
     private String heading;
     private String description;

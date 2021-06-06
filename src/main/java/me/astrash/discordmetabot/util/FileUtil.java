@@ -5,6 +5,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -15,6 +16,24 @@ public final class FileUtil {
 
     public static String getBaseName(String fileName) {
         return FilenameUtils.getBaseName(fileName);
+    }
+
+    public static String removeExtension(String fileName) {
+        return FilenameUtils.removeExtension(fileName);
+    }
+
+    public static String readFile(Path path) throws IOException {
+        byte[] encoded = Files.readAllBytes(path);
+        return new String(encoded, Charset.defaultCharset());
+    }
+
+    /*
+     * Returns false if relative path is absolute, or is not a subdirectory of the root path.
+     */
+    public static boolean isSafePath(Path root, Path relative) {
+        Path basePath = root.normalize();
+        if (relative.isAbsolute()) return false;
+        return basePath.resolve(relative).normalize().startsWith(basePath);
     }
 
     public static void cleanDirectory(File directory) throws IOException {

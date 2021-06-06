@@ -14,7 +14,7 @@ public class ConfigHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigHandler.class);
 
     private final Path path;
-    private Config config = new Config();
+    private final Config config = new Config();
 
     public ConfigHandler(Path path) throws IOException {
         this.path = path;
@@ -22,10 +22,10 @@ public class ConfigHandler {
         if (!Files.exists(path)) {
             dumpDefaultConfig();
         }
-        loadConfig();
+        reload();
     }
 
-    public void loadConfig() throws IOException {
+    public void reload() throws IOException {
         FileInputStream configStream = new FileInputStream(path.toFile());
         ConfigLoader loader = new ConfigLoader();
         try {
