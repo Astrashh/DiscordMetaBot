@@ -12,8 +12,6 @@ import java.util.Arrays;
 
 public class WikiSearcher {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WikiSearcher.class);
-
     private final static int EMBED_COLOR = 0x2F3136;
     private final static int EMBED_COLOR_WARNING = 0xF8C300;
     private final static int EMBED_COLOR_ERROR = 0xDD0000;
@@ -21,25 +19,22 @@ public class WikiSearcher {
 
     Index<String, PageResult[]> pageIndex;
 
+    // TODO - Replace with config defined embed templates
     private final EmbedBuilder defaultEmbedBuilder;
     private final EmbedBuilder noResultsEmbedBuilder;
     private final MessageEmbed tooLongEmbed;
 
     public WikiSearcher(Index<String, PageResult[]> pageIndex, ConfigHandler configHandler) {
         this.pageIndex = pageIndex;
-
-        defaultEmbedBuilder = new EmbedBuilder();
-        defaultEmbedBuilder
+        defaultEmbedBuilder = new EmbedBuilder()
                 .setThumbnail(configHandler.getConfig().getWikiSearchEmbedImage())
                 .setColor(EMBED_COLOR);
 
-        noResultsEmbedBuilder = new EmbedBuilder(defaultEmbedBuilder);
         String suggestions =
                 "- Make sure that all words are spelled correctly.\n" +
                         "- Try different keywords.\n" +
                         "- Try more general keywords.\n";
-        noResultsEmbedBuilder
-                //.setTitle(":warning: Your search '" + args + "' did not match any pages!")
+        noResultsEmbedBuilder = new EmbedBuilder(defaultEmbedBuilder)
                 .setTitle(":warning: Your search did not match any pages!")
                 .addField("Suggestions", suggestions, false)
                 .setColor(EMBED_COLOR_WARNING);
@@ -52,40 +47,34 @@ public class WikiSearcher {
     }
 
     public MessageEmbed search(String query) {
-        if (query.length() > MessageEmbed.TITLE_MAX_LENGTH) {
-            return tooLongEmbed;
-        } else {
-            long queryStart = System.nanoTime();
-            PageResult[] queryResults = pageIndex.query(query);
-            float queryTime = Duration.ofNanos(System.nanoTime() - queryStart).toMillis();
-            if (queryResults.length < 1) {
-                return warnNoResults(query);
-            } else {
-                return getResults(queryResults, queryTime, query);
-            }
-        }
+        if (query.length() > MessageEmbed.TITLE_MAX_LENGTH) return tooLongEmbed;
+        long queryStart = System.nanoTime();
+        PageResult[] queryResults = pageIndex.query(query);
+        float queryTime = Duration.ofNanos(System.nanoTime() - queryStart).toMillis();
+        if (queryResults.length < 1) return warnNoResults(query);
+        return buildResultsEmbed(queryResults, queryTime, query);
     }
 
-    private MessageEmbed getResults(PageResult[] queryResults, float queryTime, String args) {
+    private MessageEmbed buildResultsEmbed(PageResult[] queryResults, float queryTime, String args) {
         EmbedBuilder builder = new EmbedBuilder(defaultEmbedBuilder);
-        //String footerText = "Requested by " + channel.getAuthor().getAsTag() + " - Found in " + Math.round(queryTime) + "ms";
-        //builder.setFooter(footerText, channel.getAuthor().getAvatarUrl());
-        String footerText = "Found in " + Math.round(queryTime) + "ms";
-        builder.setFooter(footerText);
-        PageResult[] displayResults = clampResults(queryResults, MAX_RESULTS);
-        // Add cursory info to embed
-        if (queryResults.length == 1) {
+        builder.setFooter("Found in " + Math.round(queryTime) + "ms");
+        PageResult[] resultsToDisplay = clampResults(queryResults, MAX_RESULTS);
+        addHeadingToEmbed(builder, resultsToDisplay, queryResults);
+        addResultsToEmbed(builder, resultsToDisplay);
+        return builder.build();
+    }
+
+    private void addHeadingToEmbed(EmbedBuilder builder, PageResult[] displayResults, PageResult[] results) {
+        if (results.length == 1) {
             builder.setTitle(":mag: Found 1 relevant page");
         } else {
-            builder.setTitle(":mag: Found " + queryResults.length + " relevant pages");
-            if (queryResults.length > MAX_RESULTS) {
+            builder.setTitle(":mag: Found " + results.length + " relevant pages");
+            if (results.length > MAX_RESULTS) {
                 builder.appendDescription("*Displaying the first " + displayResults.length + " most relevant results:*");
             } else {
-                builder.appendDescription("\u200B"); // Blank character
+                builder.appendDescription("\u200B"); // Add gap between heading and results
             }
         }
-        addResultsToEmbed(builder, displayResults);
-        return builder.build();
     }
 
     private void addResultsToEmbed(EmbedBuilder builder, PageResult[] results) {

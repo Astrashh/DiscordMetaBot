@@ -7,8 +7,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class SearchWikiCommand implements EventCommand<MessageReceivedEvent> {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SearchWikiCommand.class);
-
     private WikiSearcher searcher;
 
     public SearchWikiCommand(WikiSearcher searcher) {

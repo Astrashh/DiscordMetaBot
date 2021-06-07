@@ -5,14 +5,10 @@ import java.util.Map;
 
 public class CommandHolder<T extends EventCommand<?>> {
 
-    private Map<String, T> commands = new HashMap<>();
+    private final Map<String, T> commands = new HashMap<>();
 
-    public CommandHolder<T> registerCommand(T command, String alias) {
-        commands.put(alias, command);
-        return this;
-    }
-
-    public CommandHolder<T> registerCommand(T command, String... aliases) {
+    public CommandHolder<T> registerCommand(T command, String name, String... aliases) {
+        commands.put(name, command);
         for (String alias : aliases) {
             registerCommand(command, alias);
         }
