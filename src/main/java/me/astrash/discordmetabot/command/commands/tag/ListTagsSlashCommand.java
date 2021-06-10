@@ -17,6 +17,10 @@ public class ListTagsSlashCommand implements EventCommand<SlashCommandEvent> {
 
     @Override
     public void run(CommandArgs args, SlashCommandEvent event) {
+        if (tagIndex.getAll().size() == 0) {
+            event.reply("No tags available").setEphemeral(true).queue();
+            return;
+        }
         StringBuilder builder = new StringBuilder();
         tagIndex.getAll().keySet().forEach(key -> builder.append("\u2022 ").append(key).append("\n"));
         event.reply("Availble tags:\n" + MarkdownUtil.codeblock(builder.toString())).setEphemeral(true).queue();

@@ -75,7 +75,6 @@ public class DiscordMetaBot {
                 //.registerCommand(new ReloadTagsCommand(tagIndex), "reload", "r")
                 //.registerCommand(new ReadTagFileCommand(tagIndex), "read", "cat")
                 //.registerCommand(new ListTagFilesCommand(tagIndex), "list", "ls")
-                //.registerCommand(new ListTagsCommand(tagIndex), "tags", "ts")
                 //.registerCommand(new EditTagFileCommand(tagEdits, tagIndex), "edit");
         botBuilder.addEventListeners(new MessageReceivedListener(configHandler, receivedEventCommandHolder));
 
