@@ -3,8 +3,7 @@ package me.astrash.discordmetabot.util;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +12,20 @@ import java.util.stream.Collectors;
 
 public final class FileUtil {
     private FileUtil(){}
+
+    public static void dumpResources(Class<?> clazz, Path folder, String... resourceNames) throws IOException {
+        Files.createDirectories(folder);
+        for (String resourceName : resourceNames) {
+            Path target = folder.resolve(resourceName);
+            if (!Files.exists(target)) {
+                InputStream in = clazz.getResourceAsStream("/" + resourceName);
+                byte[] buffer = new byte[in.available()];
+                in.read(buffer);
+                OutputStream out = new FileOutputStream(target.toFile());
+                out.write(buffer);
+            }
+        }
+    }
 
     public static String getBaseName(String fileName) {
         return FilenameUtils.getBaseName(fileName);

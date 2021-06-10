@@ -1,0 +1,9 @@
+wiki:
+  uri: # Git URI for pulling repository eg: https://github.com/Author/Repo.wiki.git
+  pull-branch: master
+  search-embed-image:
+  clone-automatically: true
+discord:
+  token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  command-prefix: .
+  test-guild-name:

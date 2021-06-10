@@ -36,6 +36,7 @@ public class TagIndex implements DiscreteIndex<String, MessageEmbed> {
         this.tagPath = tagPath;
         this.loader = new AbstractConfigLoader();
         loader.registerLoader(Field.class, new FieldLoader());
+        FileUtil.dumpResources(this.getClass(), tagPath, "_template.yml");
         reloadTags();
     }
 

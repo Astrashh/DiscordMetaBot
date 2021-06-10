@@ -2,9 +2,9 @@ package me.astrash.discordmetabot.config;
 
 import com.dfsek.tectonic.exception.ConfigException;
 import com.dfsek.tectonic.loading.ConfigLoader;
+import me.astrash.discordmetabot.util.FileUtil;
 
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,19 +14,23 @@ public class ConfigHandler {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigHandler.class);
 
     private final Path path;
+    private final Path configPath;
     private final Config config = new Config();
 
     public ConfigHandler(Path path) throws IOException {
         this.path = path;
-        Files.createDirectories(path.getParent());
-        if (!Files.exists(path)) {
-            dumpDefaultConfig();
-        }
+        configPath = path.resolve("config.yml");
         reload();
     }
 
     public void reload() throws IOException {
-        FileInputStream configStream = new FileInputStream(path.toFile());
+        if (!Files.exists(configPath)) {
+            FileUtil.dumpResources(this.getClass(), path, "config.yml");
+            logger.info("Fill out the information in " + configPath + " and restart the jar!");
+            System.exit(0);
+        }
+
+        FileInputStream configStream = new FileInputStream(configPath.toFile());
         ConfigLoader loader = new ConfigLoader();
         try {
             loader.load(config, configStream);
@@ -38,19 +42,5 @@ public class ConfigHandler {
 
     public Config getConfig() {
         return config;
-    }
-
-    private void dumpDefaultConfig() throws IOException {
-        FileWriter writer = new FileWriter(path.toFile());
-        writer.write(
-                "wiki:\n" +
-                "  uri: \n" +
-                "  pull-branch: \n" +
-                "discord:\n" +
-                "  token: ");
-        writer.close();
-
-        logger.info("Fill out the information in " + path + " and restart the jar!");
-        System.exit(0);
     }
 }

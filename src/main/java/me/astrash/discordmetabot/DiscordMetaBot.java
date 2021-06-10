@@ -42,16 +42,19 @@ public class DiscordMetaBot {
         Path
             wikiRepoPath = Paths.get(resourceDir + "/wiki"),
             indexPath    = Paths.get(resourceDir + "/index"),
-            tagPath      = Paths.get(resourceDir + "/tags");
+            tagPath      = Paths.get(resourceDir + "/tags"),
+            configPath   = Paths.get("./");
 
         // Load config
-        configHandler = new ConfigHandler(Paths.get(resourceDir + "/config.yml"));
+        configHandler = new ConfigHandler(configPath);
 
         // Clone wiki repo locally
         if (configHandler.getConfig().cloneWiki()) {
             try {
                 GitUtil.setupRepo(configHandler.getConfig().getWikiURI(), wikiRepoPath, configHandler.getConfig().getPullBranch());
-            } catch (GitAPIException e) { logger.error("Failed to set up wiki repository!", e); }
+            } catch (GitAPIException e) {
+                logger.error("Failed to set up wiki repository!", e);
+            }
         }
 
         // Create an index for wiki pages

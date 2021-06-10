@@ -34,7 +34,7 @@ public final class GitUtil {
             logger.info("Fetching from " + URI);
             FetchResult fetchResult = git.fetch()
                     .setRemote("origin")
-                    .setProgressMonitor(new SimpleProgressMonitor())
+                    .setProgressMonitor(new GitProgressMonitor())
                     .call();
             fetchResult.getTrackingRefUpdates().forEach(System.out::println);
 
@@ -43,7 +43,7 @@ public final class GitUtil {
             git.reset()
                     .setMode(ResetCommand.ResetType.HARD)
                     .setRef("origin/" + pullBranch)
-                    .setProgressMonitor(new SimpleProgressMonitor())
+                    .setProgressMonitor(new GitProgressMonitor())
                     .call();
         } catch (RepositoryNotFoundException e) {
             // If a repository can't be found, try to clone from remote.
@@ -63,7 +63,7 @@ public final class GitUtil {
         Git git = Git.cloneRepository()
                 .setURI(URI)
                 .setDirectory(path.toFile())
-                .setProgressMonitor(new SimpleProgressMonitor())
+                .setProgressMonitor(new GitProgressMonitor())
                 .call();
 
         // Set remote tracking branch
