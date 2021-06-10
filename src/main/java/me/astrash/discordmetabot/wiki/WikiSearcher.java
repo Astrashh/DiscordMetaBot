@@ -15,11 +15,14 @@ public class WikiSearcher {
     private final static int EMBED_COLOR = 0x2F3136;
     private final static int EMBED_COLOR_WARNING = 0xF8C300;
     private final static int EMBED_COLOR_ERROR = 0xDD0000;
-    private final static int MAX_RESULTS = 3;
+
+    public final static int MAX_RESULTS_DEFAULT = 3;
+    public final static int MAX_RESULTS_PRIVATE = 25;
+    public final static int MAX_RESULTS_PUBLIC = 1;
 
     Index<String, PageResult[]> pageIndex;
 
-    // TODO - Replace with config defined embed templates
+    // TODO - Separate embed formatting to another class
     private final EmbedBuilder defaultEmbedBuilder;
     private final EmbedBuilder noResultsEmbedBuilder;
     private final MessageEmbed tooLongEmbed;
@@ -46,33 +49,36 @@ public class WikiSearcher {
                 .build();
     }
 
-    public MessageEmbed search(String query) {
+    public MessageEmbed search(String query, int maxResults) {
         if (query.length() > MessageEmbed.TITLE_MAX_LENGTH) return tooLongEmbed;
         long queryStart = System.nanoTime();
         PageResult[] queryResults = pageIndex.query(query);
         float queryTime = Duration.ofNanos(System.nanoTime() - queryStart).toMillis();
         if (queryResults.length < 1) return warnNoResults(query);
-        return buildResultsEmbed(queryResults, queryTime, query);
+        return buildResultsEmbed(queryResults, queryTime, query, maxResults);
     }
 
-    private MessageEmbed buildResultsEmbed(PageResult[] queryResults, float queryTime, String args) {
+    public MessageEmbed search(String query) {
+        return search(query, MAX_RESULTS_DEFAULT);
+    }
+
+    private MessageEmbed buildResultsEmbed(PageResult[] queryResults, float queryTime, String args, int maxResults) {
         EmbedBuilder builder = new EmbedBuilder(defaultEmbedBuilder);
-        builder.setFooter("Found in " + Math.round(queryTime) + "ms");
-        PageResult[] resultsToDisplay = clampResults(queryResults, MAX_RESULTS);
-        addHeadingToEmbed(builder, resultsToDisplay, queryResults);
+        //builder.setFooter("Found in " + Math.round(queryTime) + "ms");
+        PageResult[] resultsToDisplay = clampResults(queryResults, maxResults);
+        addHeadingToEmbed(builder, resultsToDisplay, queryResults, args, maxResults);
         addResultsToEmbed(builder, resultsToDisplay);
         return builder.build();
     }
 
-    private void addHeadingToEmbed(EmbedBuilder builder, PageResult[] displayResults, PageResult[] results) {
-        if (results.length == 1) {
-            builder.setTitle(":mag: Found 1 relevant page");
+    private void addHeadingToEmbed(EmbedBuilder builder, PageResult[] displayResults, PageResult[] results, String args, int maxResults) {
+        if (maxResults == 1) {
+            builder.appendDescription("*:mag: Most relevant result for '" + args + "'*");
         } else {
-            builder.setTitle(":mag: Found " + results.length + " relevant pages");
-            if (results.length > MAX_RESULTS) {
-                builder.appendDescription("*Displaying the first " + displayResults.length + " most relevant results:*");
-            } else {
-                builder.appendDescription("\u200B"); // Add gap between heading and results
+            String plural = results.length == 1 ? "" : "s";
+            builder.setTitle(":mag: Found " + results.length + " relevant page" + plural + " for '" + args + "'");
+            if (results.length > maxResults) {
+                builder.appendDescription("*Displaying the first " + displayResults.length + " most relevant results*");
             }
         }
     }

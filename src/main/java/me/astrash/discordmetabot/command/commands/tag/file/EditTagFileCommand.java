@@ -25,18 +25,15 @@ public class EditTagFileCommand implements EventCommand<MessageReceivedEvent> {
         System.out.println("edit command ran: " + args);
         String codeBlock = MessageUtil.getFirstCodeBlock(args.getRaw());
         if (codeBlock != null) {
-            System.out.println(codeBlock);
             try {
                 MessageEmbed embed = tagIndex.testEmbed(codeBlock, "test");
                 try {
                     event.getChannel().sendMessage(embed).queue(
-                            // Keep track of edit message and preview message
+                            // Keep track of edited message and display message
                             message -> tagEdits.put(event.getMessageId(), message.getId())
                     );
-                } catch (IllegalArgumentException e) { MessageUtil.sendError("Could not display tag:", event.getChannel(), e, false); }
-            } catch (ConfigException e) { MessageUtil.sendError("Could not display tag:", event.getChannel(), e, false); }
-        } else {
-            MessageUtil.sendError("You need to provide a code block.", event.getChannel());
-        }
+                } catch (Exception e) { MessageUtil.sendError("Could not display tag:", event.getChannel(), e, false); }
+            } catch (ConfigException e) { MessageUtil.sendError("Invalid syntax:", event.getChannel(), e, false); }
+        } else MessageUtil.sendError("You need to provide a code block.", event.getChannel());
     }
 }

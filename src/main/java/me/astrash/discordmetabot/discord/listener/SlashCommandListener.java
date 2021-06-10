@@ -1,12 +1,8 @@
 package me.astrash.discordmetabot.discord.listener;
 
-import me.astrash.discordmetabot.command.CommandHolder;
-import me.astrash.discordmetabot.command.EventCommand;
-import me.astrash.discordmetabot.command.StringCommandArgs;
+import me.astrash.discordmetabot.command.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-import java.util.Objects;
 
 public class SlashCommandListener extends ListenerAdapter {
 
@@ -18,9 +14,7 @@ public class SlashCommandListener extends ListenerAdapter {
 
     @Override
     public void onSlashCommand(SlashCommandEvent event) {
-        if (event.getName().equals("w")) {
-            String input = Objects.requireNonNull(event.getOption("query")).getAsString();
-            commandHolder.fetch("w").run(new StringCommandArgs(input), event);
-        }
+        EventCommand<SlashCommandEvent> command = commandHolder.fetch(event.getName());
+        if (command != null) command.run(CommandArgs.EMPTY, event); // Let command fetch arguments from event
     }
 }

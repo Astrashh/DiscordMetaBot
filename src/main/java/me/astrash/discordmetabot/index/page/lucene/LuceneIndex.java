@@ -57,14 +57,9 @@ public class LuceneIndex implements PageIndex {
         boosts.put("contents", (float) 1);
         this.parser = new MultiFieldQueryParser(fields, analyzer, boosts);
 
-        long startTime = System.nanoTime();
-
         Directory directory = FSDirectory.open(indexPath);
         index(directory);
         directory.close();
-
-        long duration = (System.nanoTime() - startTime) / 1000000;
-        logger.info("Index took " + duration + "ms");
     }
 
     @Override
@@ -81,7 +76,7 @@ public class LuceneIndex implements PageIndex {
                 reader.close();
                 directory.close();
                 long duration = (System.nanoTime() - startTime) / 1000000;
-                logger.info("Query took " + duration + "ms");
+                logger.debug("Query took " + duration + "ms");
                 return searchResults;
             }
         } catch (ParseException | IOException e) {

@@ -1,17 +1,13 @@
 package me.astrash.discordmetabot;
 
 import com.dfsek.tectonic.exception.ConfigException;
-import me.astrash.discordmetabot.command.EventCommand;
 import me.astrash.discordmetabot.command.CommandHolder;
-import me.astrash.discordmetabot.command.commands.SearchWikiCommand;
+import me.astrash.discordmetabot.command.EventCommand;
 import me.astrash.discordmetabot.command.commands.tag.DisplayTagCommand;
-import me.astrash.discordmetabot.command.commands.tag.ListTagsCommand;
-import me.astrash.discordmetabot.command.commands.tag.ReloadTagsCommand;
-import me.astrash.discordmetabot.command.commands.tag.file.EditTagFileCommand;
-import me.astrash.discordmetabot.command.commands.tag.file.ListTagFilesCommand;
-import me.astrash.discordmetabot.command.commands.tag.file.ReadTagFileCommand;
+import me.astrash.discordmetabot.command.commands.tag.ListTagsSlashCommand;
+import me.astrash.discordmetabot.command.commands.wiki.SearchWikSlashCommand;
 import me.astrash.discordmetabot.config.ConfigHandler;
-import me.astrash.discordmetabot.discord.listener.MessageCommandListener;
+import me.astrash.discordmetabot.discord.listener.MessageReceivedListener;
 import me.astrash.discordmetabot.discord.listener.SlashCommandListener;
 import me.astrash.discordmetabot.index.Index;
 import me.astrash.discordmetabot.index.TagIndex;
@@ -33,8 +29,6 @@ import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DiscordMetaBot {
 
@@ -63,40 +57,52 @@ public class DiscordMetaBot {
         // Create an index for wiki pages
         logger.info("Indexing repository...");
         Index<String, PageResult[]> wikiIndex = new LuceneIndex(wikiRepoPath, indexPath);
+        WikiSearcher wikiSearcher = new WikiSearcher(wikiIndex, configHandler);
 
         // Create an index for tags
         logger.info("Loading tag files...");
         TagIndex tagIndex = new TagIndex(tagPath);
 
-        Map<String, String> tagEdits = new HashMap<>();
+        JDABuilder botBuilder = JDABuilder.createDefault(configHandler.getConfig().getDiscordBotToken());
 
-        WikiSearcher wikiSearcher = new WikiSearcher(wikiIndex, configHandler);
-
+        // Registering event handlers + event commands
         CommandHolder<EventCommand<MessageReceivedEvent>> receivedEventCommandHolder = new CommandHolder<EventCommand<MessageReceivedEvent>>()
-                .registerCommand(new SearchWikiCommand(wikiSearcher), "wiki", "w")
-                .registerCommand(new ReloadTagsCommand(tagIndex), "reload", "r")
-                .registerCommand(new ReadTagFileCommand(tagIndex), "read", "cat")
-                .registerCommand(new ListTagFilesCommand(tagIndex), "list", "ls")
-                .registerCommand(new ListTagsCommand(tagIndex), "tags", "ts")
-                .registerCommand(new DisplayTagCommand(tagIndex), "tag", "t")
-                .registerCommand(new EditTagFileCommand(tagEdits, tagIndex), "edit");
+                .registerCommand(new DisplayTagCommand(tagIndex), "tag", "t", "info", "i");
+                //.registerCommand(new SearchWikiMessageCommand(wikiSearcher), "wiki", "w")
+                //.registerCommand(new ReloadTagsCommand(tagIndex), "reload", "r")
+                //.registerCommand(new ReadTagFileCommand(tagIndex), "read", "cat")
+                //.registerCommand(new ListTagFilesCommand(tagIndex), "list", "ls")
+                //.registerCommand(new ListTagsCommand(tagIndex), "tags", "ts")
+                //.registerCommand(new EditTagFileCommand(tagEdits, tagIndex), "edit");
+        botBuilder.addEventListeners(new MessageReceivedListener(configHandler, receivedEventCommandHolder));
 
-        CommandHolder<EventCommand<SlashCommandEvent>> slashCommandHolder = new CommandHolder<EventCommand<SlashCommandEvent>>();
+        CommandHolder<EventCommand<SlashCommandEvent>> slashCommandHolder = new CommandHolder<EventCommand<SlashCommandEvent>>()
+                .registerCommand(new SearchWikSlashCommand(wikiSearcher), "w")
+                .registerCommand(new ListTagsSlashCommand(tagIndex), "tags");
+        botBuilder.addEventListeners(new SlashCommandListener(slashCommandHolder));
 
+        //Map<String, String> tagEdits = new HashMap<>();
+        //CommandHolder<EventCommand<MessageUpdateEvent>> editCommandHolder = new CommandHolder<EventCommand<MessageUpdateEvent>>()
+        //        .registerCommand(new EditTagUpdateCommand(tagEdits, tagIndex), "editupdate");
+        //botBuilder.addEventListeners(new MessageUpdateListener(editCommandHolder));
+
+        CommandData wikiCommandData = new CommandData("w", "Searches the Terra wiki.")
+                .addOption(new OptionData(OptionType.STRING, "query", "The page you're looking for. Includes both page titles, and subheadings.").setRequired(true))
+                .addOption(new OptionData(OptionType.BOOLEAN, "public", "Whether others can see your query."))
+                .addOption(new OptionData(OptionType.INTEGER, "count", "How many pages to return."));
+        CommandData listTagsCommandData = new CommandData("tags", "Lists available tags.");
+
+        logger.info("Connecting to Discord via JDA...");
         try {
-            JDABuilder botBuilder = JDABuilder.createDefault(configHandler.getConfig().getDiscordBotToken());
-            JDA bot = botBuilder.addEventListeners(
-                    new MessageCommandListener(configHandler, receivedEventCommandHolder),
-                    new SlashCommandListener(slashCommandHolder)
-                ).build().awaitReady();
+            JDA bot = botBuilder.build().awaitReady();
 
+            // For now, register slash commands in testing guild
             Guild guild = bot.getGuildsByName(configHandler.getConfig().getTestGuildName(), true).get(0);
             if (guild != null) {
-                CommandData wikiCommand = new CommandData("w", "Searches the Terra wiki")
-                        .addOption(new OptionData(OptionType.STRING, "query", "The page you're looking for.").setRequired(true))
-                        .addOption(new OptionData(OptionType.INTEGER, "count", "How many pages to return."))
-                        .addOption(new OptionData(OptionType.BOOLEAN, "private", "Whether only you can see your query."));
-                guild.updateCommands().addCommands(wikiCommand).queue();
+                guild.updateCommands().addCommands(
+                        wikiCommandData,
+                        listTagsCommandData
+                ).queue();
             }
         } catch (LoginException | InterruptedException e) { logger.error("Failed to set up Discord bot!", e); }
     }

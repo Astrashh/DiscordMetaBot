@@ -16,11 +16,6 @@ public class CommandHolder<T extends EventCommand<?>> {
     }
 
     public T fetch(String alias) {
-        T command = commands.get(alias);
-        if (command != null) {
-            return command;
-        } else {
-            return (T) EventCommand.NULL_COMMAND;
-        }
+        return commands.get(alias);
     }
 }
