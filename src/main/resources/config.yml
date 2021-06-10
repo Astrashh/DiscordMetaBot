@@ -1,5 +1,6 @@
 wiki:
   uri: # Git URI for pulling repository eg: https://github.com/Author/Repo.wiki.git
+  link: # Link to wiki, queried pages will be concatenated to this to create a hyperlink
   pull-branch: master
   search-embed-image:
   clone-automatically: true

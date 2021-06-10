@@ -1,5 +1,6 @@
 package me.astrash.discordmetabot.index.page.lucene;
 
+import me.astrash.discordmetabot.config.ConfigHandler;
 import me.astrash.discordmetabot.index.page.PageIndex;
 import me.astrash.discordmetabot.index.page.PageResult;
 import me.astrash.discordmetabot.parse.MarkdownParser;
@@ -43,9 +44,12 @@ public class LuceneIndex implements PageIndex {
     private final QueryParser parser;
     private final Analyzer analyzer;
 
-    public LuceneIndex(Path dataPath, Path indexPath) throws IOException {
+    private final ConfigHandler configHandler;
+
+    public LuceneIndex(Path dataPath, Path indexPath, ConfigHandler configHandler) throws IOException {
         this.dataPath = dataPath;
         this.indexPath = indexPath;
+        this.configHandler = configHandler;
 
         // TODO - Add custom analysis functionality
         this.analyzer = new StandardAnalyzer(); // Used in both indexing and queries
@@ -72,7 +76,7 @@ public class LuceneIndex implements PageIndex {
             Query query = parser.parse(input);
             int matches = searcher.count(query);
             if (matches > 1) {
-                PageResult[] searchResults = LucenePageResult.convertScoreDocs(searcher.search(query, matches).scoreDocs, searcher);
+                PageResult[] searchResults = LucenePageResult.convertScoreDocs(searcher.search(query, matches).scoreDocs, searcher, configHandler.getConfig().getWikiLink());
                 reader.close();
                 directory.close();
                 long duration = (System.nanoTime() - startTime) / 1000000;

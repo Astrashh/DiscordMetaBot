@@ -59,7 +59,7 @@ public class DiscordMetaBot {
 
         // Create an index for wiki pages
         logger.info("Indexing repository...");
-        Index<String, PageResult[]> wikiIndex = new LuceneIndex(wikiRepoPath, indexPath);
+        Index<String, PageResult[]> wikiIndex = new LuceneIndex(wikiRepoPath, indexPath, configHandler);
         WikiSearcher wikiSearcher = new WikiSearcher(wikiIndex, configHandler);
 
         // Create an index for tags

@@ -8,6 +8,9 @@ public class Config implements ConfigTemplate {
     @Value("wiki.uri")
     private String wikiURI;
 
+    @Value("wiki.link")
+    private String wikiLinkPrefix;
+
     @Value("wiki.pull-branch")
     private String pullBranch;
 
@@ -28,6 +31,10 @@ public class Config implements ConfigTemplate {
 
     public String getWikiURI() {
         return wikiURI;
+    }
+
+    public String getWikiLink() {
+        return wikiLinkPrefix;
     }
 
     public String getPullBranch() {

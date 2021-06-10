@@ -15,13 +15,12 @@ public class LucenePageResult implements PageResult {
     private String heading;
     private String description;
 
-    private final String wikiURL = "https://github.com/PolyhedralDev/Terra/wiki";
     private final String anchorRegex = "[^a-zA-Z0-9 ]";
 
     /*
      * Container class for holding information for each query hit
      */
-    public LucenePageResult(ScoreDoc scoreDoc, IndexSearcher searcher) throws IOException {
+    public LucenePageResult(ScoreDoc scoreDoc, IndexSearcher searcher, String wikiURL) throws IOException {
 
         Document doc = searcher.doc(scoreDoc.doc);
 
@@ -50,14 +49,14 @@ public class LucenePageResult implements PageResult {
     /*
      * Returns QueryDisplays from an array of ScoreDocs (the results of a query)
      */
-    public static LucenePageResult[] convertScoreDocs(ScoreDoc[] docs, IndexSearcher searcher) throws IOException {
+    public static LucenePageResult[] convertScoreDocs(ScoreDoc[] docs, IndexSearcher searcher, String wikiURL) throws IOException {
 
         // TODO - Add fancy logic to combine file displays with header displays
 
         LucenePageResult[] displays = new LucenePageResult[docs.length];
 
         for (int i = 0; i < docs.length; i++) {
-            displays[i] = new LucenePageResult(docs[i], searcher);
+            displays[i] = new LucenePageResult(docs[i], searcher, wikiURL);
         }
 
         return displays;
